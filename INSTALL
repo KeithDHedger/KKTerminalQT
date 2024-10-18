@@ -1,0 +1,6 @@
+Installation Instructions
+*************************
+
+./autogen.sh --prefix=/usr
+make
+sudo make install
