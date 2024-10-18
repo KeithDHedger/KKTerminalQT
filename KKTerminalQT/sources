@@ -1,0 +1,1 @@
+COMMONSRC = ../src/KKTerminalQTClass.cpp ../src/LFSTKUtilityClass.cpp ../src/SingleInstanceClass.cpp ../src/main.cpp

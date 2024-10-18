@@ -1,0 +1,26 @@
+#!/bin/bash
+
+shopt -s nullglob
+
+if [ -e ./toolspath ];then
+	. ./toolspath
+else
+	./setuptools
+	. ./toolspath
+fi
+
+cd "KKTerminalQT/src"
+
+rm moc_* &>/dev/null||true
+csrclst=$(echo "../src/*.c" "../src/*.cpp")
+echo COMMONSRC = $csrclst > ../sources
+
+$MOCPATH KKTerminalQTClass.h -o moc_KKTerminalQTClass.cpp
+while read
+	do
+		outfile=${REPLY#./*}
+		outfile=moc_${outfile%*.h}.cpp
+		$MOCPATH $REPLY -o $outfile
+	done < <(find -name "*QT*.h")
+
+exit 0
