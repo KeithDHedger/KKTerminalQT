@@ -10,9 +10,6 @@ kkterminalqt_CXXFLAGS = -O3
 pixfilesdir = $(pkgdatadir)/pixmaps
 pixfiles_DATA = ../resources/pixmaps/*
 
-scriptfilesdir = $(pkgdatadir)/scripts
-scriptfiles_SCRIPTS = ../resources/scripts/README
-
 bin_PROGRAMS = kkterminalqt
 
 man1_MANS = ../resources/man/kkterminalqt.1
