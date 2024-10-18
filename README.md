@@ -10,14 +10,14 @@ TODO
 
 Lots!
 
-Add copy/paste etc
-Add help
-Add about
-Add detachable tabs?
-Redo prefs
-Keyboard nav
-Window title
-Man page
-Cli args
-Sessions ?
+Add copy/paste etc<br>
+Add help<br>
+Add about<br>
+Add detachable tabs?<br>
+Redo prefs<br>
+Keyboard nav<br>
+Window title<br>
+Man page<br>
+Cli args<br>
+Sessions ?<br>
 
