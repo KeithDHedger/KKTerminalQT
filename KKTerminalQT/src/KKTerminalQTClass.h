@@ -63,7 +63,7 @@ class KKTerminalQTClass : public QObject
 
 		int						termNumber=1;
 
-		miniPrefsReturnStruct	miniPrefsDialog(QString prefsname,QStringList items,bool liveupdate);
+		miniPrefsReturnStruct	miniPrefsDialog(QString prefsname,QStringList items);
 
 };
 

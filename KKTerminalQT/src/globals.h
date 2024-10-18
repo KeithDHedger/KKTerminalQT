@@ -78,7 +78,6 @@ struct miniPrefsReturnStruct
 
 #include "config.h"
 
-#include "LFSTKUtilityClass.h"
 #include "KKTerminalQTClass.h"
 
 #endif

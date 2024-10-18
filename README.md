@@ -19,4 +19,5 @@ Keyboard nav
 Window title
 Man page
 Cli args
+Sessions ?
 

@@ -72,7 +72,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		{
 			miniPrefsReturnStruct myprefs;
 
-			myprefs=this->miniPrefsDialog("KKTerminalQT",QStringList()<<"Theme"<<"Font",false);
+			myprefs=this->miniPrefsDialog("KKTerminalQT",QStringList()<<"Theme"<<"Font");
 			myprefs.boxes[0]->setText(this->theme);
 			myprefs.boxes[1]->setText(this->font.toString());
 			int res=myprefs.theDialog->exec();
@@ -104,7 +104,7 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->addTerminal();
 }
 
-miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStringList items,bool liveupdate)
+miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStringList items)
 {
 	miniPrefsReturnStruct	prefs;
 	QSettings				miniprefsname("KDHedger",prefsname);
@@ -113,7 +113,7 @@ miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStri
 	QHBoxLayout				*hlayout;
 	QPushButton				*cancelbutton=new QPushButton("&Cancel");
 	QPushButton				*okbutton=new QPushButton("&Apply");
-	std::string				prefsentry;
+	QString					prefsentry;
 
 	prefs.theDialog=new QDialog();
 
@@ -133,19 +133,9 @@ miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStri
 			hlayout->setContentsMargins(0,0,0,0);
 			hbox->setLayout(hlayout);
 			hlayout->addWidget(new QLabel(items.at(j)),0,Qt::AlignLeft);
-			prefsentry=LFSTK_UtilityClass::LFSTK_strStrip(items.at(j).toStdString());
-			prefsentry=LFSTK_UtilityClass::LFSTK_strReplaceAllChar(prefsentry," ","",true);
-			prefs.boxes[j]=new QLineEdit(miniprefsname.value(prefsentry.c_str(),"").toString().simplified());	
-			if(liveupdate==true)
-				{
-					QObject::connect(prefs.boxes[j],&QLineEdit::textEdited,[j,items,prefsname,prefs](const QString)
-						{
-							QSettings	miniprefsname("KDHedger",prefsname);
-							std::string	prefsentry=LFSTK_UtilityClass::LFSTK_strStrip(items.at(j).toStdString());
-							prefsentry=LFSTK_UtilityClass::LFSTK_strReplaceAllChar(prefsentry," ","",true);
-							miniprefsname.setValue(prefsentry.c_str(),prefs.boxes[j]->text());
-						});
-				}
+			prefsentry=items.at(j).trimmed();
+			prefsentry.replace(QRegularExpression(" "),"");
+			prefs.boxes[j]=new QLineEdit(miniprefsname.value(prefsentry,"").toString().simplified());
 			hlayout->addWidget(prefs.boxes[j],1,Qt::AlignRight);
 			docvlayout->addWidget(hbox);
 		}
@@ -177,6 +167,7 @@ void KKTerminalQTClass::addTerminal(void)
 
 void KKTerminalQTClass::runCLICommands(int quid)
 {
+	qDebug()<<"runCLICommands";
 }
 
 void KKTerminalQTClass::initApp(int argc,char** argv)
