@@ -61,8 +61,11 @@ class KKTerminalQTClass : public QObject
 //help menu
 		QMenu					*helpMenu;
 
+		QTimer 					*checkMessages=NULL;
+		int						prefsMsgTimer=1000;
 		int						termNumber=1;
 
+		void						doTimer(void);
 		miniPrefsReturnStruct	miniPrefsDialog(QString prefsname,QStringList items);
 
 };

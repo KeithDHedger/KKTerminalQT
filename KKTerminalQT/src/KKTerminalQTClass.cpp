@@ -223,7 +223,80 @@ void KKTerminalQTClass::addTerminal(void)
 
 void KKTerminalQTClass::runCLICommands(int quid)
 {
-	qDebug()<<"runCLICommands";
+	msgStruct	message;
+	int			msglen;
+	QString		opensessionname;
+	QStringList	list;
+	char			*pathtopwd;
+
+	//qDebug()<<"runCLICommands";
+
+	if(this->parser.isSet("quit"))
+		{
+ 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","quit");
+			message.mType=KKTERMINALQTQUIT;
+			msgsnd(quid,&message,msglen,0);
+		}
+
+	for(int j=0;j<this->parser.values("new-tab").size();j++)
+		{
+ 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",this->parser.values("new-tab").at(j).toStdString().c_str());
+			message.mType=KKTERMINALQTNEW;
+			msgsnd(quid,&message,msglen,0);
+		}
+	
+	for(int j=0;j<this->parser.optionNames().size();j++)
+		{
+			if(this->parser.optionNames().at(j).compare("tab")==0)
+				{
+ 					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",getenv("PWD"));
+					message.mType=KKTERMINALQTNEWHERE;
+					msgsnd(quid,&message,msglen,0);
+				}
+		}
+
+	for(int j=0;j<this->parser.values("command").size();j++)
+		{
+ 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s\n",this->parser.value("command").toStdString().c_str());
+			message.mType=KKTERMINALQTCOMMAND;
+			msgsnd(quid,&message,msglen,0);
+		}
+}
+
+void KKTerminalQTClass::doTimer(void)
+{
+	int			retcode=0;
+	msgStruct	buffer;
+	while(retcode!=-1)
+		{
+			buffer.mText[0]=0;
+			retcode=msgrcv(this->queueID,&buffer,MAXMSGSIZE,MSGANY,IPC_NOWAIT);
+			buffer.mText[retcode]=0;
+			if(retcode!=-1)
+				{
+					switch(buffer.mType)
+						{
+							case KKTERMINALQTQUIT:
+								this->application->quit();
+								break;
+							case KKTERMINALQTNEW:
+								this->addTerminal();
+								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+								break;
+							case KKTERMINALQTNEWHERE:
+								this->addTerminal();
+								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+								break;
+							case KKTERMINALQTCOMMAND:
+								this->addTerminal();
+								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(buffer.mText);
+								break;
+						}
+				}
+		}
 }
 
 void KKTerminalQTClass::initApp(int argc,char** argv)
@@ -240,12 +313,20 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	r=prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
 	this->mainWindow->setGeometry(r);
 
+
+	this->checkMessages=new QTimer();
+	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
+		{
+			this->doTimer();
+		});
+
+	this->checkMessages->start(this->prefsMsgTimer);
+
 	this->mainWindow->show();
 }
 
 void KKTerminalQTClass::writeExitData(void)
 {
-
 	QRect		rg;
 	QRect		rf;
 	QSettings	prefs;

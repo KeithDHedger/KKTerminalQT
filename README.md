@@ -18,6 +18,6 @@ Redo prefs<br>
 Keyboard nav<br>
 Window title<br>
 Man page<br>
-Cli args<br>
+<s>Cli args<br></s>
 Sessions ?<br>
 

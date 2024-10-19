@@ -33,39 +33,21 @@ int main (int argc, char **argv)
 	napp->setApplicationName("KKTerminalQT");
 
 	kkterminalqt=new KKTerminalQTClass(napp);
-   // kkterminalqt->splash=new QSplashScreen(QString(DATADIR)+"/pixmaps/KKEditQT.png",Qt::FramelessWindowHint|Qt::X11BypassWindowManagerHint);
-
-//tagClass tc(kkterminalqt);
-//tc.getTagList(QStringList()<<"/home/keithhedger/Documents/test it.html"<<"/home/keithhedger/Documents/test.html");
-//
-//for (int j=0;j<tc.tagList.count();j++)
-//{
-//	qDebug()<<tc.tagList.at(j).tagName<<tc.tagList.at(j).tagType<<tc.tagList.at(j).lineNumberString<<tc.tagList.at(j).tagDefine<<tc.tagList.at(j).tagFilepath<<tc.tagList.at(j).lineNumber;
-//}
 	kkterminalqt->parser.addHelpOption();
 	kkterminalqt->parser.addOptions(
 		{
 			{{"k","key"},"Force key ID.","KeyID"},
 			{{"m","multi"},"Force multiple instance."},
-			{{"s","safe"},"Safe mode ( no plugins, no plugin enable/disable data written )."},
-			{{"v","very-safe"},"Very safe mode ( no plugins, no highlighting/themes, no prefs data written )."},
 			{{"q","quit"},"Quit app."},
-			{{"r","restore-session"},"Open session by name.","SessionName"}
+			{{"n","new-tab"},"New Terminal.","ARG"},
+			{{"t","tab"},"New Terminal In PWD."},
+			{{"c","command"},"Execute ARG in new tab.","ARG"},
 	});
 
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
 
 	if(kkterminalqt->parser.isSet("key"))
 		kkterminalqt->sessionID=kkterminalqt->parser.value("key").toInt(nullptr,0);
-
-	//if(kkterminalqt->parser.isSet("safe"))
-	//	kkterminalqt->safeFlag=true;
-
-	//if(kkterminalqt->parser.isSet("very-safe"))
-	//	{
-	//		kkterminalqt->safeFlag=true;
-	//		kkterminalqt->verySafeFlag=true;
-	//	}
 
 	SingleInstanceClass siapp(kkterminalqt->application,kkterminalqt->sessionID,kkterminalqt->parser.isSet("multi"),argc,argv);
 	if(siapp.getRunning()==true)
@@ -74,43 +56,23 @@ int main (int argc, char **argv)
 			return(0);
 		}
 
-	//kkterminalqt->splash->show();
 	kkterminalqt->queueID=siapp.queueID;
 	kkterminalqt->forcedMultInst=kkterminalqt->parser.isSet("multi");
 	kkterminalqt->currentWorkSpace=siapp.workspace;
 	kkterminalqt->sessionID=siapp.useKey;
-	//kkterminalqt->forceDefaultGeom=!siapp.isOnX11;
 	kkterminalqt->initApp(argc,argv);
-
-//test plugs
-//#if 0
-//#ifdef _DEBUGCODE_
-//	//qSetMessagePattern("[%{type}] %{appname} (%{file}->%{function}->%{line}) - %{message}");
-//	for(int j=0;j<kkterminalqt->plugins.count();j++)
-//		kkterminalqt->plugins[j].printIt();
-//#endif
-//#endif
+	qDebug()<<kkterminalqt->sessionID;
 
 	kkterminalqt->runCLICommands(kkterminalqt->queueID);
 
-	//kkterminalqt->setToolbarSensitive();
 	if(getuid()!=0)
 		kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
 	else
 		kkterminalqt->application->setWindowIcon(QIcon(DATADIR"/pixmaps/KKEditRoot.png"));
 
-	//kkterminalqt->splash->finish(kkterminalqt->mainWindow);
-
 	status=kkterminalqt->application->exec();
-//	qDebug()<<"here>>>>>";
-//	//qDebug()<<kkterminalqt->mainWindow->geometry();
 	kkterminalqt->writeExitData();
-//	qDebug()<<"<<<<<";
-/*
- QSettings settings("MyCompany", "MyApp");
-     settings.setValue("geometry", saveGeometry());
-     settings.setValue("windowState", saveState());
-*/
+
 	delete kkterminalqt;
 	return status;
 }

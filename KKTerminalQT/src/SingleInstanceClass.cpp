@@ -56,7 +56,7 @@ SingleInstanceClass::~SingleInstanceClass()
 	XCloseDisplay(this->display);
 }
 
-bool SingleInstanceClass::getRunning(void)
+bool SingleInstanceClass::getRunning(void)//TODO//
 {
 	QString	commsFolderName;
 	QString	commsDeskfile;
