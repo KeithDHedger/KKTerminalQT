@@ -35,6 +35,8 @@ KKTerminalQTClass::~KKTerminalQTClass()
 
 void KKTerminalQTClass::buildMainGui(void)
 {
+	QAction	*menuitem;
+
 	this->mainWindow=new QMainWindow();
 	this->mainNotebook=new QTabWidget(this->mainWindow);
 	this->menuBar=new QMenuBar;
@@ -48,27 +50,27 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 	
 //new
-	this->newMenuItem=new QAction(QIcon::fromTheme("document-new"),"&New");
-	this->fileMenu->addAction(this->newMenuItem);
-	this->newMenuItem->setShortcut(QKeySequence::New);
-	QObject::connect(this->newMenuItem,&QAction::triggered,[this]()
+	menuitem=new QAction(QIcon::fromTheme("document-new"),"&New");
+	this->fileMenu->addAction(menuitem);
+	menuitem->setShortcut(QKeySequence::New);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			this->addTerminal();
 			this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
 		});
 
 //close
-	this->closeMenuItem=new QAction(QIcon::fromTheme("document-close"),"&Close");
-	this->fileMenu->addAction(this->closeMenuItem);
-	this->closeMenuItem->setShortcut(QKeySequence::Close);
-	QObject::connect(this->closeMenuItem,&QAction::triggered,[this]()
+	menuitem=new QAction(QIcon::fromTheme("document-close"),"&Close");
+	this->fileMenu->addAction(menuitem);
+	menuitem->setShortcut(QKeySequence::Close);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			delete this->mainNotebook->widget(this->mainNotebook->currentIndex());
 		});
 //prefs
-	this->prefsMenuItem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences");
-	this->fileMenu->addAction(this->prefsMenuItem);
-	QObject::connect(this->prefsMenuItem,&QAction::triggered,[this]()
+	menuitem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences");
+	this->fileMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			miniPrefsReturnStruct myprefs;
 
@@ -88,14 +90,68 @@ void KKTerminalQTClass::buildMainGui(void)
 				}
 			delete myprefs.theDialog;
 		});
-
 //quit
-	this->quitMenuItem=new QAction(QIcon::fromTheme("application-exit"),"&Quit");
-	this->fileMenu->addAction(this->quitMenuItem);
-	this->quitMenuItem->setShortcut(QKeySequence::Quit);
-	QObject::connect(this->quitMenuItem,&QAction::triggered,[this]()
+	menuitem=new QAction(QIcon::fromTheme("application-exit"),"&Quit");
+	this->fileMenu->addAction(menuitem);
+	menuitem->setShortcut(QKeySequence::Quit);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			this->application->quit();
+		});
+
+//edit menu
+	this->editMenu=new QMenu("&Edit");
+	this->menuBar->addMenu(this->editMenu);
+
+//copy
+	menuitem=new QAction(QIcon::fromTheme("edit-copy"),"&Copy");
+	menuitem->setShortcut(QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_C));
+	this->editMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->copyClipboard();
+		});
+//paste
+	menuitem=new QAction(QIcon::fromTheme("edit-paste"),"&Paste");
+	menuitem->setShortcut(QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_V));
+	this->editMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->pasteClipboard();
+		});
+//clear
+	menuitem=new QAction(QIcon::fromTheme("edit-clear"),"C&lear");
+	this->editMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->clear();
+		});
+
+//help menu
+	this->helpMenu=new QMenu("&Help");
+	this->menuBar->addMenu(this->helpMenu);
+//about
+	menuitem=new QAction(QIcon::fromTheme("help-about"),"&About");
+	this->helpMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			QMessageBox::about(this->mainWindow,"KKTerminalQT","QT version of KKTerminal<br><br><a href=\"https://keithdhedger.github.io\">Website</a><br><br><a href=\"mailto:keithdhedger@gmail.com\">Mail Me</a>");
+		});
+//about qt
+	this->menuBar->addMenu(this->helpMenu);
+	menuitem=new QAction(QIcon::fromTheme("help-about"),"About &QT");
+	this->helpMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			this->application->aboutQt();
+		});
+//help
+	this->menuBar->addMenu(this->helpMenu);
+	menuitem=new QAction(QIcon::fromTheme("help-contents"),"&Help");
+	this->helpMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qDebug()<<"do help";
 		});
 
 	this->mainWindow->setMenuBar(this->menuBar);
@@ -159,7 +215,7 @@ void KKTerminalQTClass::addTerminal(void)
 	newconsole=new QTermWidget(0,this->mainWindow);
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
-
+	newconsole->setKeyBindings("linux");
 	newconsole->setScrollBarPosition(QTermWidget::ScrollBarRight);
 	int tn=this->mainNotebook->addTab(newconsole,QString("Terminal %1").arg(this->termNumber++));
 	newconsole->startShellProgram ();

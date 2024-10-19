@@ -56,10 +56,10 @@ class KKTerminalQTClass : public QObject
 	private:
 //file menu
 		QMenu					*fileMenu;
-		QAction					*newMenuItem;
-		QAction					*closeMenuItem;
-		QAction					*prefsMenuItem;
-		QAction					*quitMenuItem;
+//edit menu
+		QMenu					*editMenu;
+//help menu
+		QMenu					*helpMenu;
 
 		int						termNumber=1;
 

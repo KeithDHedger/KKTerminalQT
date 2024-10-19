@@ -10,9 +10,9 @@ TODO
 
 Lots!
 
-Add copy/paste etc<br>
+<s>Add copy/paste etc<br>
+Add about<br></s>
 Add help<br>
-Add about<br>
 Add detachable tabs?<br>
 Redo prefs<br>
 Keyboard nav<br>
