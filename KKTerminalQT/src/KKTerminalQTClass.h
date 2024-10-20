@@ -32,22 +32,18 @@ class KKTerminalQTClass : public QObject
 		~KKTerminalQTClass();
 
 //app vars
-		QMainWindow				*mainWindow;
+		QMainWindow				*mainWindow=NULL;
 		QApplication				*application=NULL;
 		QTabWidget				*mainNotebook=NULL;
 		QMenuBar					*menuBar=NULL;
 		QString					theme="Falcon";
 		QFont					font=QGuiApplication::font();
-		int						sessionID=-1;
+		int						key=-1;
 		int						queueID=-1;
-		int						currentWorkSpace=-1;
-		bool						forcedMultInst=false;
 
 //app functions
+		void						handleSignal(int signum);
 		void						initApp(int argc,char** argv);
-		void						buildMainGui(void);
-		void						addTerminal(void);
-		void						writeExitData(void);
 
 //scripting
 		void						runCLICommands(int quid);
@@ -62,12 +58,15 @@ class KKTerminalQTClass : public QObject
 		QMenu					*helpMenu;
 
 		QTimer 					*checkMessages=NULL;
-		int						prefsMsgTimer=1000;
+		int						prefsMsgTimer=2000;
 		int						termNumber=1;
 
+//app functions
+		void						addTerminal(void);
+		void						buildMainGui(void);
+		void						writeExitData(void);
 		void						doTimer(void);
 		miniPrefsReturnStruct	miniPrefsDialog(QString prefsname,QStringList items);
-
 };
 
 #endif

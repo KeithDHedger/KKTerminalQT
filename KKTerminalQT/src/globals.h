@@ -21,46 +21,25 @@
 #ifndef _GLOBALS_
 #define _GLOBALS_
 
-enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTCOMMAND};//TODO//
+enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTCOMMAND,KKTERMINALQTACTIVATE};//TODO//
 
-#define MAXMSGSIZE 4096
-#define MSGKEY 0x7000
-#define NOSENDMSG 3
-
+#define MAXMSGSIZE 256
 #define MSGANY 0
-#define ALLMSGTYPES 0xfff
-#define CONTINUEMSG 0x8000
-#define SENDMSG 0x1000
 
-//enum msgActions {ACTIVATEAPPMSG=100,OPENFILEMSG,NEWFILEMSG,SAVEFILEMSG,SAVEFILEASMSG,QUITAPPMSG,SAVECURRENTSESSIONMSG,RESTORESESSIONMSG,GOTOLINEMSG,SEARCHDEFMSG,SELECTTABMSG,SELECTTABBYNAMEMSG,SELECTTABBYPATHMSG,BOOKMARKMSG,CLOSETABMSG,CLOSEALLTABSMSG,SETUSERMARKMSG,UNSETUSERMARKMASG,MOVETOMSG,PASTEMSG,COPYMSG,CUTMSG,INSERTTEXTMSG,INSERTNLMSG,SELECTBETWEENMSG,INSERTFILEMSG,PRINTFILESMSG,RUNTOOLMSG,ACTIVATEMENUBYLABELEDMSG,OPENINDOCVIEWMSG,SENDPOSDATAMSG,SENDSELECTEDTEXTMSG,SENDCURRENTURL,SENDSESSIONNAMEMSG,LASTMSG};//TODO//seperate info comands etc
-
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <sys/stat.h>
-//#include <unistd.h>
-//#include <sys/types.h>
 #include <linux/limits.h>
-//#include <sys/ioctl.h>
-//#include <sys/mman.h>
-//#include <fcntl.h>
 #include <signal.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-//#include <libgen.h>
-//#include <time.h>
-//
-#include <string>
-//#include <vector>
-//#include <map>
 
-//#include <sqlite3.h>
+#include <string>
 
 #include <QApplication>
 #include <QtWidgets>
 #include <QSettings>
 #include <QObject>
 #include <QProxyStyle>
+
+#include "config.h"
 
 #ifdef _USEQT6_
 #include <qtermwidget6/qtermwidget.h>
@@ -74,15 +53,13 @@ struct msgStruct
 	char mText[MAXMSGSIZE];
 };
 
-
 struct miniPrefsReturnStruct
 {
 	QDialog					*theDialog;
 	QHash<int,QLineEdit*>	boxes;
 };
 
-#include "config.h"
-
+#include "SingleInstanceClass.h"
 #include "KKTerminalQTClass.h"
 
 #endif

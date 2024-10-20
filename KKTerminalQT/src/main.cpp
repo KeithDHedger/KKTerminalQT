@@ -19,9 +19,13 @@
 */
 
 #include "globals.h"
-#include "SingleInstanceClass.h"
 
 KKTerminalQTClass	*kkterminalqt=NULL;
+
+void signalHandler(int signalNum)
+{
+	kkterminalqt->handleSignal(signalNum);
+}
 
 int main (int argc, char **argv)
 {
@@ -33,6 +37,10 @@ int main (int argc, char **argv)
 	napp->setApplicationName("KKTerminalQT");
 
 	kkterminalqt=new KKTerminalQTClass(napp);
+	signal(SIGUSR1,signalHandler);
+	signal(SIGTERM,signalHandler);
+	signal(SIGINT,signalHandler);
+
 	kkterminalqt->parser.addHelpOption();
 	kkterminalqt->parser.addOptions(
 		{
@@ -47,53 +55,69 @@ int main (int argc, char **argv)
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
 
 	if(kkterminalqt->parser.isSet("key"))
-		kkterminalqt->sessionID=kkterminalqt->parser.value("key").toInt(nullptr,0);
+		kkterminalqt->key=kkterminalqt->parser.value("key").toInt(nullptr,0);
+	if(kkterminalqt->parser.isSet("multi"))
+		kkterminalqt->key=0xdeadbeef;
 
-	SingleInstanceClass siapp(kkterminalqt->application,kkterminalqt->sessionID,kkterminalqt->parser.isSet("multi"),argc,argv);
-	if(siapp.getRunning()==true)
+	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
+	if(kkterminalqt->parser.isSet("multi"))
 		{
-			kkterminalqt->runCLICommands(siapp.queueID);
-			return(0);
+			kkterminalqt->queueID=siapp->queueID;
+			kkterminalqt->key=siapp->key;
+			//qDebug()<<"mult running...";
+			//qDebug()<<"siapp->queueID"<<siapp->queueID;
+			//qDebug()<<"siapp->key"<<siapp->key;
+			kkterminalqt->initApp(argc,argv);
+			kkterminalqt->runCLICommands(siapp->queueID);
+			kill(getpid(),SIGUSR1);
+			kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
+			status=kkterminalqt->application->exec();
+			delete kkterminalqt;
+			delete siapp;
+			return status;
 		}
 
-	kkterminalqt->queueID=siapp.queueID;
-	kkterminalqt->forcedMultInst=kkterminalqt->parser.isSet("multi");
-	kkterminalqt->currentWorkSpace=siapp.workspace;
-	kkterminalqt->sessionID=siapp.useKey;
-	kkterminalqt->initApp(argc,argv);
-	qDebug()<<kkterminalqt->sessionID;
-
-	kkterminalqt->runCLICommands(kkterminalqt->queueID);
-
-	if(getuid()!=0)
-		kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
+	if(siapp->running==true)
+		{
+			//qDebug()<<"already running...";
+			//qDebug()<<"siapp->queueID"<<siapp->queueID;
+			//qDebug()<<"siapp->key"<<siapp->key;
+			msgStruct	message;
+			int			msglen;
+			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","XXX");
+			message.mType=KKTERMINALQTACTIVATE;
+			msgsnd(siapp->queueID,&message,msglen,0);
+			kkterminalqt->runCLICommands(siapp->queueID);
+			siapp->sh->attach();
+			siapp->sh->lock();
+				char *from=(char*)siapp->sh->data();
+				kill(atoi(from),SIGUSR1);
+			siapp->sh->unlock();
+			delete kkterminalqt;
+			delete siapp;
+			return(0);
+		}
 	else
-		kkterminalqt->application->setWindowIcon(QIcon(DATADIR"/pixmaps/KKEditRoot.png"));
+		{
+			kkterminalqt->queueID=siapp->queueID;
+			kkterminalqt->key=siapp->key;
+			//qDebug()<<"kkterminalqt->queueID"<<kkterminalqt->queueID;
+			//qDebug()<<"kkterminalqt->key"<<kkterminalqt->key;
+		}
+
+	kkterminalqt->initApp(argc,argv);
+	kkterminalqt->runCLICommands(siapp->queueID);
+	siapp->sh->attach();
+	siapp->sh->lock();
+		char *from=(char*)siapp->sh->data();
+		kill(atoi(from),SIGUSR1);
+	siapp->sh->unlock();
+
+	kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
 
 	status=kkterminalqt->application->exec();
-	kkterminalqt->writeExitData();
 
 	delete kkterminalqt;
+	delete siapp;
 	return status;
 }
-
-
-//
-//
-//
-//
-//exit(100);
-//
-//#include <QApplication>
-//#include <QWidget>
-//#include <QMessageBox>
-//
-//int main(int argv, char **args)
-//{
-//	QApplication	app(argv, args);
-//	QMessageBox		msgBox;
-//
-//	msgBox.setText("Hello World!");
-//	msgBox.show();
-//	return app.exec();
-//}

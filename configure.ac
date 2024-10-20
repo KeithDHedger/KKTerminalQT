@@ -29,6 +29,7 @@ AC_ARG_ENABLE(qt6,AS_HELP_STRING([--enable-qt6],[Build fot Qt6]),
 		QTERMWIDGET_MODULES="qtermwidget6 >= 2.0.0"
 		PKG_CHECK_MODULES(QTERMWIDGET, $QTERMWIDGET_MODULES)
 
+		AC_DEFINE([_USEQT6_], [], [Build Qt6])
 		AC_MSG_NOTICE([Using Qt6])
 	else
 		QTWIDGETS_MODULES="Qt5Widgets >= 5.15.0"

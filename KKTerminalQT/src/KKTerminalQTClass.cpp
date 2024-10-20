@@ -31,6 +31,8 @@ KKTerminalQTClass::KKTerminalQTClass(QApplication *app)
 
 KKTerminalQTClass::~KKTerminalQTClass()
 {
+	if(this->mainWindow!=NULL)
+		this->writeExitData();
 }
 
 void KKTerminalQTClass::buildMainGui(void)
@@ -221,6 +223,22 @@ void KKTerminalQTClass::addTerminal(void)
 	newconsole->startShellProgram ();
 }
 
+void KKTerminalQTClass::handleSignal(int signum)
+{
+	switch(signum)
+		{
+			case SIGUSR1:
+				this->doTimer();
+				break;
+			case SIGTERM:
+			case SIGINT:
+				this->application->quit();
+				break;
+			default:
+				break;
+		}
+}
+
 void KKTerminalQTClass::runCLICommands(int quid)
 {
 	msgStruct	message;
@@ -229,8 +247,7 @@ void KKTerminalQTClass::runCLICommands(int quid)
 	QStringList	list;
 	char			*pathtopwd;
 
-	//qDebug()<<"runCLICommands";
-
+	//qDebug()<<"runCLICommands"<<this->parser.optionNames();
 	if(this->parser.isSet("quit"))
 		{
  			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","quit");
@@ -247,7 +264,7 @@ void KKTerminalQTClass::runCLICommands(int quid)
 	
 	for(int j=0;j<this->parser.optionNames().size();j++)
 		{
-			if(this->parser.optionNames().at(j).compare("tab")==0)
+			if((this->parser.optionNames().at(j).compare("tab")==0) || (this->parser.optionNames().at(j).compare("t")==0))
 				{
  					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",getenv("PWD"));
 					message.mType=KKTERMINALQTNEWHERE;
@@ -293,6 +310,10 @@ void KKTerminalQTClass::doTimer(void)
 								this->addTerminal();
 								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
 								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(buffer.mText);
+								break;
+							case KKTERMINALQTACTIVATE:
+								this->mainWindow->activateWindow();
+								this->mainWindow->raise();
 								break;
 						}
 				}

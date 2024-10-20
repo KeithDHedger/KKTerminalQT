@@ -21,7 +21,7 @@
 #ifndef _SINGLEINSTANCECLASS_
 #define _SINGLEINSTANCECLASS_
 
-#include "globals.h"
+//#include "globals.h"
 
 //#ifndef _USEQT6_
 //#include <QX11Info>
@@ -33,25 +33,19 @@
 class SingleInstanceClass
 {
 	public:
-		SingleInstanceClass(QApplication *app,int key,bool forcem,int argc,char **argv);
+		SingleInstanceClass(QString name,int suppliedkey=-1);
 		~SingleInstanceClass();
 
-		long				getSIWorkSpace(void);
-		void*			getX11Prop(Window w,Atom prop,Atom type,int fmt,unsigned long *rcountp);
-		bool				getRunning(void);
+		long				getSIWorkSpace(Display *display);
+		void				*getX11Prop(Display	*display,Window w,Atom prop,Atom type,int fmt,unsigned long *rcountp);
+		unsigned long	hashFromKey(QString key);
 
-		QApplication		*app;
-		int				workspace=-1;
-		bool				isOnX11=false;
+		int				key;
 		int				queueID=-1;
-		int				useKey=-1;
-
+		QSharedMemory	*sh;
+		bool				running=false;
 	private:
-		bool				deleteComfiles=false;
-		QFile			fileMsg;
-		QFile			filePID;
-		bool				usingMulti=false;
-		Display			*display;
+		QString			appName;
 };
 
 #endif

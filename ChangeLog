@@ -1,3 +1,9 @@
+0.1.0
+Removed unneeded defines.
+Raise main window when doing cli commands.
+Fixed qt6 build.
+Moved to shared memory for single instance from lockfiles.
+
 0.0.5
 Done cli options.
 Done about.
