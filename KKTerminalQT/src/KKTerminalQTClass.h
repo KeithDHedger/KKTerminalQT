@@ -40,6 +40,7 @@ class KKTerminalQTClass : public QObject
 		QFont					font=QGuiApplication::font();
 		int						key=-1;
 		int						queueID=-1;
+		bool						startBlank=false;
 
 //app functions
 		void						handleSignal(int signum);
@@ -50,6 +51,7 @@ class KKTerminalQTClass : public QObject
 		QCommandLineParser		parser;
 
 	private:
+		QTermWidget				*currentConsole=NULL;
 //file menu
 		QMenu					*fileMenu;
 //edit menu

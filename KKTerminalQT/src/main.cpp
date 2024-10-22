@@ -47,12 +47,14 @@ int main (int argc, char **argv)
 			{{"k","key"},"Force key ID.","KeyID"},
 			{{"m","multi"},"Force multiple instance."},
 			{{"q","quit"},"Quit app."},
-			{{"n","new-tab"},"New Terminal.","ARG"},
-			{{"t","tab"},"New Terminal In PWD."},
+			{{"n","new-tab"},"New tab in ARG.","ARG"},
+			{{"t","tab"},"New tab in PWD."},
 			{{"c","command"},"Execute ARG in new tab.","ARG"},
 	});
 
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
+	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")))
+		kkterminalqt->startBlank=true;
 
 	if(kkterminalqt->parser.isSet("key"))
 		kkterminalqt->key=kkterminalqt->parser.value("key").toInt(nullptr,0);

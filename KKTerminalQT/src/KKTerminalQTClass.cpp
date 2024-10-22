@@ -46,9 +46,21 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->fileMenu=new QMenu("&File");
 	this->menuBar->addMenu(this->fileMenu);
 	this->mainNotebook->setTabsClosable(true);
+	this->mainNotebook->setMovable(true);
 	QObject::connect(this->mainNotebook,&QTabWidget::tabCloseRequested,[this](int index)
 		{
+			if(this->mainNotebook->count()==0)
+				this->currentConsole=NULL;
 			delete this->mainNotebook->widget(index);
+		});
+	QObject::connect(this->mainNotebook,&QTabWidget::currentChanged,[this](int index)
+		{
+			if(this->currentConsole!=NULL)
+				{
+					QTermWidget *t=qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()));
+					if(t!=NULL)
+						this->mainWindow->setWindowTitle(t->workingDirectory());
+			}
 		});
 	
 //new
@@ -68,7 +80,10 @@ void KKTerminalQTClass::buildMainGui(void)
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			delete this->mainNotebook->widget(this->mainNotebook->currentIndex());
-		});
+			if(this->mainNotebook->count()==0)
+				this->currentConsole=NULL;
+	});
+
 //prefs
 	menuitem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences");
 	this->fileMenu->addAction(menuitem);
@@ -104,7 +119,6 @@ void KKTerminalQTClass::buildMainGui(void)
 //edit menu
 	this->editMenu=new QMenu("&Edit");
 	this->menuBar->addMenu(this->editMenu);
-
 //copy
 	menuitem=new QAction(QIcon::fromTheme("edit-copy"),"&Copy");
 	menuitem->setShortcut(QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_C));
@@ -154,12 +168,15 @@ void KKTerminalQTClass::buildMainGui(void)
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			qDebug()<<"do help";
+			//sendText(QString &text)
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText("kkterminalqt -h\n");
 		});
 
 	this->mainWindow->setMenuBar(this->menuBar);
 	this->mainWindow->setCentralWidget(this->mainNotebook);
 
-	this->addTerminal();
+	if(this->startBlank==false)
+		this->addTerminal();
 }
 
 miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStringList items)
@@ -215,12 +232,29 @@ void KKTerminalQTClass::addTerminal(void)
 {
 	QTermWidget		*newconsole;
 	newconsole=new QTermWidget(0,this->mainWindow);
+	QObject::connect(newconsole,&QTermWidget::receivedData,[this,newconsole](const QString text)
+		{
+			if(this->currentConsole==newconsole)
+				this->mainWindow->setWindowTitle(newconsole->workingDirectory());
+		});
+	QObject::connect(newconsole,&QTermWidget::termGetFocus,[this,newconsole]()
+		{
+			this->mainWindow->setWindowTitle(newconsole->workingDirectory());
+			this->currentConsole=newconsole;
+		});
+
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
 	newconsole->setKeyBindings("linux");
 	newconsole->setScrollBarPosition(QTermWidget::ScrollBarRight);
 	int tn=this->mainNotebook->addTab(newconsole,QString("Terminal %1").arg(this->termNumber++));
-	newconsole->startShellProgram ();
+	if(this->currentConsole!=NULL)
+		{
+			newconsole->setWorkingDirectory(this->currentConsole->workingDirectory());
+		}
+
+	newconsole->startShellProgram();
+	newconsole->setFocus();
 }
 
 void KKTerminalQTClass::handleSignal(int signum)
@@ -333,7 +367,6 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 
 	r=prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
 	this->mainWindow->setGeometry(r);
-
 
 	this->checkMessages=new QTimer();
 	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()

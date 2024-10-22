@@ -11,13 +11,14 @@ TODO
 Lots!
 
 <s>Add copy/paste etc<br>
-Add about<br></s>
-Add help<br>
+Add about<br>
+Add help<br></s>
 Add detachable tabs?<br>
 Redo prefs<br>
 Keyboard nav<br>
-Window title<br>
+<s>Window title<br></s>
 Man page<br>
 <s>Cli args<br></s>
 Sessions ?<br>
+
 

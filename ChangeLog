@@ -1,4 +1,8 @@
 0.1.0
+Set tabs movable.
+Set new tab to current CWD.
+Set window title to current CWD.
+If --tab or --new-tab given on commandline no default tab is opened.
 Removed unneeded defines.
 Raise main window when doing cli commands.
 Fixed qt6 build.
