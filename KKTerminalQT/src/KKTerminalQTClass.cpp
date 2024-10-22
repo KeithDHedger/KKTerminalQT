@@ -167,8 +167,6 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			qDebug()<<"do help";
-			//sendText(QString &text)
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText("kkterminalqt -h\n");
 		});
 
@@ -242,6 +240,45 @@ void KKTerminalQTClass::addTerminal(void)
 			this->mainWindow->setWindowTitle(newconsole->workingDirectory());
 			this->currentConsole=newconsole;
 		});
+	newconsole->setContextMenuPolicy(Qt::CustomContextMenu);
+	QObject::connect(newconsole,&QWidget::customContextMenuRequested,[this,newconsole](const QPoint pos)
+		{
+			QPoint	globalpos=newconsole->mapToGlobal(pos);
+			QMenu	cmenu;
+			QAction	copyitem(QIcon::fromTheme("edit-copy"),"Copy");
+			QAction	pasteitem(QIcon::fromTheme("edit-paste"),"Paste");
+			QAction	pasteinitem(QIcon::fromTheme("edit-paste"),"Paste In Quotes");
+			QAction	clearitem(QIcon::fromTheme("edit-clear"),"Clear");
+
+			copyitem.setData(QVariant(101));
+			cmenu.addAction(&copyitem);
+			pasteitem.setData(QVariant(102));
+			cmenu.addAction(&pasteitem);
+			pasteinitem.setData(QVariant(103));
+			cmenu.addAction(&pasteinitem);
+			clearitem.setData(QVariant(104));
+			cmenu.addAction(&clearitem);
+
+			QAction	*selecteditem=cmenu.exec(globalpos);
+			if(selecteditem!=NULL)
+				{
+					switch(selecteditem->data().toInt())
+						{
+							case 101:
+							newconsole->copyClipboard();
+							break;
+							case 102:
+								newconsole->pasteClipboard();
+								break;
+							case 103:
+								newconsole->sendText(QString("'%1'").arg(QGuiApplication::clipboard()->text(QClipboard::Clipboard)));
+								break;
+							case 104:
+								newconsole->clear();
+								break;
+						}
+				}
+	});
 
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
