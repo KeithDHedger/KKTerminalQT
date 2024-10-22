@@ -1,4 +1,5 @@
 0.1.0
+Fixed close menu icon.
 Added copy/paste menu to context menu.
 Fixed segfault on closing last tag.
 Set tabs movable.

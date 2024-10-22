@@ -74,7 +74,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 
 //close
-	menuitem=new QAction(QIcon::fromTheme("document-close"),"&Close");
+	menuitem=new QAction(QIcon::fromTheme("window-close"),"&Close");
 	this->fileMenu->addAction(menuitem);
 	menuitem->setShortcut(QKeySequence::Close);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
