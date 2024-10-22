@@ -1,4 +1,5 @@
 0.1.0
+Fixed segfault on closing last tag.
 Set tabs movable.
 Set new tab to current CWD.
 Set window title to current CWD.
