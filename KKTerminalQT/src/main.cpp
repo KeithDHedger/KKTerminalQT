@@ -88,7 +88,6 @@ int main (int argc, char **argv)
 			msgsnd(siapp->queueID,&message,msglen,0);
 			kkterminalqt->runCLICommands(siapp->queueID);
 			kill(atoi(siapp->queueAddr),SIGUSR1);
-
 			delete kkterminalqt;
 			delete siapp;
 			return(0);
