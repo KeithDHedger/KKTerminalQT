@@ -105,29 +105,25 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 		}
 
 	this->queueID=msgget(this->key,IPC_CREAT|0660);
-	//qDebug()<<"key"<<this->key<<"keystr"<<this->keystr<<"queueID"<<this->queueID;
+	this->shmKey=hashFromKey(QString("%1%2").arg(keystr).arg("sharedmem"));
+	this->shmQueueID=shmget(this->shmKey,SHSIZE,0);
 
-	this->sh=new QSharedMemory(keystr);
-	gotsh=sh->create(MAXMSGSIZE,QSharedMemory::ReadWrite);
-	if(gotsh==true)
+	if(this->shmQueueID==-1)
 		{
-			this->sh->lock();
-				char *to=(char*)this->sh->data();
-    				sprintf(to,"%i\n",getpid());
-    			this->sh->unlock();
-    			this->running=false;
-			//QMessageBox::about(nullptr,"KKTerminalQT",QString("data for single inst\nworkspace=%1\nscreen=%2\ndisplay str=%3").arg(workspace).arg(screen).arg(this->displaystr));
+			this->shmQueueID=shmget(this->shmKey,SHSIZE,IPC_CREAT|0600);
+			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
+			sprintf(this->queueAddr,"%i\n",getpid());
 		}
 	else
 		{
 			this->running=true;
+			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
 		}
 	XCloseDisplay(display);
 }
 
 SingleInstanceClass::~SingleInstanceClass()
 {
-	delete this->sh;
 }
 
 

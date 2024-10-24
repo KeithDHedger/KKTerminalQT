@@ -58,7 +58,8 @@ int main (int argc, char **argv)
 
 	if(kkterminalqt->parser.isSet("key"))
 		kkterminalqt->key=kkterminalqt->parser.value("key").toInt(nullptr,0);
-	if(kkterminalqt->parser.isSet("multi"))
+
+	if(kkterminalqt->parser.isSet("multi"))//TODO//
 		kkterminalqt->key=0xdeadbeef;
 
 	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
@@ -66,13 +67,12 @@ int main (int argc, char **argv)
 		{
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
-			//qDebug()<<"mult running...";
-			//qDebug()<<"siapp->queueID"<<siapp->queueID;
-			//qDebug()<<"siapp->key"<<siapp->key;
 			kkterminalqt->initApp(argc,argv);
 			kkterminalqt->runCLICommands(siapp->queueID);
 			kill(getpid(),SIGUSR1);
 			kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
+			shmctl(siapp->shmQueueID,IPC_RMID,NULL);
+			msgctl(siapp->queueID,IPC_RMID,NULL);
 			status=kkterminalqt->application->exec();
 			delete kkterminalqt;
 			delete siapp;
@@ -81,20 +81,14 @@ int main (int argc, char **argv)
 
 	if(siapp->running==true)
 		{
-			//qDebug()<<"already running...";
-			//qDebug()<<"siapp->queueID"<<siapp->queueID;
-			//qDebug()<<"siapp->key"<<siapp->key;
 			msgStruct	message;
 			int			msglen;
 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","XXX");
 			message.mType=KKTERMINALQTACTIVATE;
 			msgsnd(siapp->queueID,&message,msglen,0);
 			kkterminalqt->runCLICommands(siapp->queueID);
-			siapp->sh->attach();
-			siapp->sh->lock();
-				char *from=(char*)siapp->sh->data();
-				kill(atoi(from),SIGUSR1);
-			siapp->sh->unlock();
+			kill(atoi(siapp->queueAddr),SIGUSR1);
+
 			delete kkterminalqt;
 			delete siapp;
 			return(0);
@@ -103,23 +97,19 @@ int main (int argc, char **argv)
 		{
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
-			//qDebug()<<"kkterminalqt->queueID"<<kkterminalqt->queueID;
-			//qDebug()<<"kkterminalqt->key"<<kkterminalqt->key;
 		}
 
 	kkterminalqt->initApp(argc,argv);
 	kkterminalqt->runCLICommands(siapp->queueID);
-	siapp->sh->attach();
-	siapp->sh->lock();
-		char *from=(char*)siapp->sh->data();
-		kill(atoi(from),SIGUSR1);
-	siapp->sh->unlock();
+	kill(atoi(siapp->queueAddr),SIGUSR1);
 
 	kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
 
 	status=kkterminalqt->application->exec();
 
 	delete kkterminalqt;
+	shmctl(siapp->shmQueueID,IPC_RMID,NULL);
+	msgctl(siapp->queueID,IPC_RMID,NULL);
 	delete siapp;
 	return status;
 }

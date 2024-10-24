@@ -21,14 +21,10 @@
 #ifndef _SINGLEINSTANCECLASS_
 #define _SINGLEINSTANCECLASS_
 
-//#include "globals.h"
-
-//#ifndef _USEQT6_
-//#include <QX11Info>
-////#include <QGuiApplication>
-//#endif
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+
+#define SHSIZE 48
 
 class SingleInstanceClass
 {
@@ -42,7 +38,11 @@ class SingleInstanceClass
 
 		int				key;
 		int				queueID=-1;
-		QSharedMemory	*sh;
+
+		int				shmQueueID=-1;
+		unsigned long	shmKey=0;
+		char				*queueAddr=NULL;
+		
 		bool				running=false;
 	private:
 		QString			appName;

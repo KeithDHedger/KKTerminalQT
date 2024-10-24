@@ -1,4 +1,6 @@
 0.1.0
+Delete shared mem and msg queue on exit.
+Moved from QSharedMemory to normal linux shared memory ( qt screws with the key ).
 Fixed close menu icon.
 Added copy/paste menu to context menu.
 Fixed segfault on closing last tag.

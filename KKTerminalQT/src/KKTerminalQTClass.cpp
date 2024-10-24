@@ -355,6 +355,7 @@ void KKTerminalQTClass::doTimer(void)
 {
 	int			retcode=0;
 	msgStruct	buffer;
+
 	while(retcode!=-1)
 		{
 			buffer.mText[0]=0;
