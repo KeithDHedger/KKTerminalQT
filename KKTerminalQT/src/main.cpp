@@ -59,8 +59,11 @@ int main (int argc, char **argv)
 	if(kkterminalqt->parser.isSet("key"))
 		kkterminalqt->key=kkterminalqt->parser.value("key").toInt(nullptr,0);
 
-	if(kkterminalqt->parser.isSet("multi"))//TODO//
-		kkterminalqt->key=0xdeadbeef;
+	if(kkterminalqt->parser.isSet("multi"))
+		{
+			srandom(time(NULL));
+			kkterminalqt->key=random();
+		}
 
 	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
 	if(kkterminalqt->parser.isSet("multi"))
@@ -71,9 +74,10 @@ int main (int argc, char **argv)
 			kkterminalqt->runCLICommands(siapp->queueID);
 			kill(getpid(),SIGUSR1);
 			kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
+			shmdt(siapp->queueAddr);
 			shmctl(siapp->shmQueueID,IPC_RMID,NULL);
-			msgctl(siapp->queueID,IPC_RMID,NULL);
 			status=kkterminalqt->application->exec();
+			msgctl(siapp->queueID,IPC_RMID,NULL);
 			delete kkterminalqt;
 			delete siapp;
 			return status;
