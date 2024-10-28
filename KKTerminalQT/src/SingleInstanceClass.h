@@ -24,7 +24,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#define SHSIZE 48
+#define SHSIZE 128
 
 class SingleInstanceClass
 {

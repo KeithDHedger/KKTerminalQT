@@ -85,6 +85,7 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 	int		screen;
 	QString	displaystr;
 	QString	keystr;
+	int		cnt=0;
 
 	this->appName=name;
 
@@ -112,7 +113,12 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 		{
 			this->shmQueueID=shmget(this->shmKey,SHSIZE,IPC_CREAT|0600);
 			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
-			sprintf(this->queueAddr,"%i\n",getpid());
+			for(int q=0;q<SHSIZE;q++)
+				this->queueAddr[q]=0xff;
+			cnt=sprintf(this->queueAddr,"%i\n",getpid());
+			cnt=sprintf(this->queueAddr+=cnt,"%s\n",keystr.toStdString().c_str());
+			cnt=sprintf(this->queueAddr+=cnt,"0x%x\n",this->key);
+			cnt=sprintf(this->queueAddr+=cnt,"%s\n",QString("%1%2").arg(keystr).arg("sharedmem").toStdString().c_str());
 		}
 	else
 		{
