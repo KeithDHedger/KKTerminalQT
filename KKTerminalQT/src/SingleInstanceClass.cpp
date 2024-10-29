@@ -90,9 +90,18 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 	this->appName=name;
 
 	display=XOpenDisplay(NULL);
-	workspace=getSIWorkSpace(display);
-	screen=DefaultScreen(display);
-	displaystr=DisplayString(display);
+	if(display!=NULL)
+		{
+			workspace=getSIWorkSpace(display);
+			screen=DefaultScreen(display);
+			displaystr=DisplayString(display);
+		}
+	else
+		{
+			workspace=1;
+			screen=0;
+			displaystr=":0.0";
+		}
 
 	if(suppliedkey==-1)
 		{
@@ -113,10 +122,11 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 		{
 			this->shmQueueID=shmget(this->shmKey,SHSIZE,IPC_CREAT|0600);
 			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
-			cnt=sprintf(this->queueAddr,"%i\n",getpid());
-			cnt=sprintf(this->queueAddr+=cnt,"%s\n",keystr.toStdString().c_str());
-			cnt=sprintf(this->queueAddr+=cnt,"0x%x\n",this->key);
-			cnt=sprintf(this->queueAddr+=cnt,"%s\n",QString("%1%2").arg(keystr).arg("sharedmem").toStdString().c_str());
+			char		*ptr=this->queueAddr;
+			cnt=sprintf(ptr,"%i\n",getpid());
+			cnt=sprintf(ptr+=cnt,"%s\n",keystr.toStdString().c_str());
+			cnt=sprintf(ptr+=cnt,"0x%x\n",this->key);
+			cnt=sprintf(ptr+=cnt,"%s\n",QString("%1%2").arg(keystr).arg("sharedmem").toStdString().c_str());
 		}
 	else
 		{

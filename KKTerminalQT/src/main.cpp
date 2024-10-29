@@ -64,7 +64,6 @@ int main (int argc, char **argv)
 			srandom(time(NULL));
 			kkterminalqt->key=random();
 		}
-
 	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
 	if(kkterminalqt->parser.isSet("multi"))
 		{
