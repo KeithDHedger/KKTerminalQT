@@ -14,7 +14,7 @@ Lots!
 Add about<br>
 Add help<br></s>
 Add detachable tabs?<br>
-Redo prefs<br>
+<s>Redo prefs</s><br>
 Keyboard nav<br>
 <s>Window title<br></s>
 Man page<br>
