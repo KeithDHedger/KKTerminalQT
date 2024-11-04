@@ -54,12 +54,18 @@ struct msgStruct
 	char mText[MAXMSGSIZE];
 };
 
-struct miniPrefsReturnStruct
-{
-	QDialog					*theDialog;
-	QHash<int,QLineEdit*>	boxes;
-};
+//struct miniPrefsReturnStruct
+//{
+//	QDialog					*theDialog;
+//	QHash<int,QLineEdit*>	boxes;
+//};
 
+#define THEMEBOX 0
+#define FONTBOX 0
+#define BLINKBOX 0
+#define CONFIRMPASTEBOX 1
+
+#include "prefsClass.h"
 #include "SingleInstanceClass.h"
 #include "KKTerminalQTClass.h"
 

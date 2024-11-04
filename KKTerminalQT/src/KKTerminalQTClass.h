@@ -41,6 +41,8 @@ class KKTerminalQTClass : public QObject
 		int						key=-1;
 		int						queueID=-1;
 		bool						startBlank=false;
+		bool						blinkCursor=false;
+		bool						confirmMLPaste=false;
 
 //app functions
 		void						handleSignal(int signum);
@@ -68,7 +70,6 @@ class KKTerminalQTClass : public QObject
 		void						buildMainGui(void);
 		void						writeExitData(void);
 		void						doTimer(void);
-		miniPrefsReturnStruct	miniPrefsDialog(QString prefsname,QStringList items);
 };
 
 #endif

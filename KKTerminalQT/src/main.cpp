@@ -35,6 +35,7 @@ int main (int argc, char **argv)
 
 	napp->setOrganizationName("KDHedger");
 	napp->setApplicationName("KKTerminalQT");
+	napp->setApplicationVersion(PACKAGE_VERSION);
 
 	kkterminalqt=new KKTerminalQTClass(napp);
 	signal(SIGUSR1,signalHandler);
@@ -42,6 +43,7 @@ int main (int argc, char **argv)
 	signal(SIGINT,signalHandler);
 
 	kkterminalqt->parser.addHelpOption();
+	kkterminalqt->parser.addVersionOption();
 	kkterminalqt->parser.addOptions(
 		{
 			{{"k","key"},"Force key ID.","KeyID"},

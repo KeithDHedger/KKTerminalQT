@@ -89,23 +89,26 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->fileMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			miniPrefsReturnStruct myprefs;
+			QStringList	prfs;
+			QStringList	themes=QTermWidget::availableColorSchemes();
+			prefsClass	newprefs;
 
-			myprefs=this->miniPrefsDialog("KKTerminalQT",QStringList()<<"Theme"<<"Font");
-			myprefs.boxes[0]->setText(this->theme);
-			myprefs.boxes[1]->setText(this->font.toString());
-			int res=myprefs.theDialog->exec();
-			if(res==1)
+			themes.sort();
+			prfs<<"combostart"<<"term/Theme"<<"Linux"<<themes<<"comboend"<<"font"<<"term/Font"<<"Monospace,10,-1,5,50,0,0,0,0,0"<<"check"<<"term/Blink Cursor"<<"0"<<"check"<<"term/Confirm Paste"<<"0";
+			newprefs.createDialog("KKTerminalQT Prefs Class",prfs);
+			if(newprefs.dialogPrefs.valid==true)
 				{
-					this->theme=myprefs.boxes[0]->text();
+					this->theme=newprefs.dialogPrefs.comboBoxes.value(THEMEBOX)->currentText();
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
-					this->font.fromString(myprefs.boxes[1]->text());
+					this->font.fromString(newprefs.dialogPrefs.fontBoxes.value(FONTBOX)->text());
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setTerminalFont(this->font);
-					QSettings	prefs;
-					prefs.setValue("Theme",myprefs.boxes[0]->text());
-					prefs.setValue("Font",myprefs.boxes[1]->text());
+					this->blinkCursor=newprefs.dialogPrefs.checkBoxes.value(BLINKBOX)->isChecked();
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setBlinkingCursor(this->blinkCursor);
+					this->confirmMLPaste=newprefs.dialogPrefs.checkBoxes.value(CONFIRMPASTEBOX)->isChecked();
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setConfirmMultilinePaste(this->confirmMLPaste);
+					
+					newprefs.writePrefs();
 				}
-			delete myprefs.theDialog;
 		});
 //quit
 	menuitem=new QAction(QIcon::fromTheme("application-exit"),"&Quit");
@@ -115,7 +118,6 @@ void KKTerminalQTClass::buildMainGui(void)
 		{
 			this->application->quit();
 		});
-
 //edit menu
 	this->editMenu=new QMenu("&Edit");
 	this->menuBar->addMenu(this->editMenu);
@@ -151,7 +153,7 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			QMessageBox::about(this->mainWindow,"KKTerminalQT","QT version of KKTerminal<br><br><a href=\"https://keithdhedger.github.io\">Website</a><br><br><a href=\"mailto:keithdhedger@gmail.com\">Mail Me</a>");
+			QMessageBox::about(this->mainWindow,"KKTerminalQT",PACKAGE_STRING "<br>QT version of KKTerminal<br><br><a href=\"https://keithdhedger.github.io\">Website</a><br><br><a href=\"mailto:keithdhedger@gmail.com\">Mail Me</a>");
 		});
 //about qt
 	this->menuBar->addMenu(this->helpMenu);
@@ -177,55 +179,6 @@ void KKTerminalQTClass::buildMainGui(void)
 		this->addTerminal();
 }
 
-miniPrefsReturnStruct KKTerminalQTClass::miniPrefsDialog(QString prefsname,QStringList items)
-{
-	miniPrefsReturnStruct	prefs;
-	QSettings				miniprefsname("KDHedger",prefsname);
-	QWidget					*hbox;
-	QVBoxLayout				*docvlayout=new QVBoxLayout;
-	QHBoxLayout				*hlayout;
-	QPushButton				*cancelbutton=new QPushButton("&Cancel");
-	QPushButton				*okbutton=new QPushButton("&Apply");
-	QString					prefsentry;
-
-	prefs.theDialog=new QDialog();
-
-	QObject::connect(cancelbutton,&QPushButton::clicked,[this,prefs]()
-		{
-			prefs.theDialog->reject();
-		});
-	QObject::connect(okbutton,&QPushButton::clicked,[this,prefs]()
-		{
-			prefs.theDialog->accept();
-		});
-
-	for(int j=0;j<items.size();j++)
-		{
-			hbox=new QWidget;
-			hlayout=new QHBoxLayout;
-			hlayout->setContentsMargins(0,0,0,0);
-			hbox->setLayout(hlayout);
-			hlayout->addWidget(new QLabel(items.at(j)),0,Qt::AlignLeft);
-			prefsentry=items.at(j).trimmed();
-			prefsentry.replace(QRegularExpression(" "),"");
-			prefs.boxes[j]=new QLineEdit(miniprefsname.value(prefsentry,"").toString().simplified());
-			hlayout->addWidget(prefs.boxes[j],1,Qt::AlignRight);
-			docvlayout->addWidget(hbox);
-		}
-	hbox=new QWidget;
-	hlayout=new QHBoxLayout;
-	hlayout->setContentsMargins(0,0,0,0);
-	hbox->setLayout(hlayout);
-	hlayout->addWidget(cancelbutton);
-	hlayout->addStretch(0);
-	hlayout->addWidget(okbutton);
-
-	docvlayout->addWidget(hbox);
-
-	prefs.theDialog->setLayout(docvlayout);
-	return(prefs);
-}
-
 void KKTerminalQTClass::addTerminal(void)
 {
 	QTermWidget		*newconsole;
@@ -241,6 +194,12 @@ void KKTerminalQTClass::addTerminal(void)
 			this->currentConsole=newconsole;
 		});
 	newconsole->setContextMenuPolicy(Qt::CustomContextMenu);
+	newconsole->setBlinkingCursor(this->blinkCursor);
+	newconsole->setConfirmMultilinePaste(this->confirmMLPaste);
+//newconsole->setKeyboardCursorShape(Konsole::Emulation::KeyboardCursorShape::UnderlineCursor);//both
+//newconsole->setTerminalBackgroundImage("/home/keithhedger/Backgrounds/rage.png");//both
+//newconsole->setTerminalBackgroundMode(0);//both
+
 	QObject::connect(newconsole,&QWidget::customContextMenuRequested,[this,newconsole](const QPoint pos)
 		{
 			QPoint	globalpos=newconsole->mapToGlobal(pos);
@@ -318,7 +277,6 @@ void KKTerminalQTClass::runCLICommands(int quid)
 	QStringList	list;
 	char			*pathtopwd;
 
-	//qDebug()<<"runCLICommands"<<this->parser.optionNames();
 	if(this->parser.isSet("quit"))
 		{
  			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","quit");
@@ -394,16 +352,24 @@ void KKTerminalQTClass::doTimer(void)
 
 void KKTerminalQTClass::initApp(int argc,char** argv)
 {
-	QRect	r(0,0,800,400);
-	QSettings					prefs;
+	QRect		r(100,100,800,400);
+	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry"};
+	prefsClass	newprefs;
 
-	qDebug()<<QTermWidget::availableColorSchemes();
+	newprefs.setPrefs(prfs);
+	newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
+	newprefs.setPrefValue("term/Theme",QVariant("Linux").toString());
+	newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
+	newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
+	newprefs.setPrefValue("app/geometry",QVariant(r));
+	newprefs.readPrefs();
+	this->theme=newprefs.getPrefValue("term/Theme").toString();
+	this->font.fromString(newprefs.getPrefValue("term/Font").toString());
+	this->blinkCursor=newprefs.getPrefValue("term/BlinkCursor").toBool();
+	this->confirmMLPaste=newprefs.getPrefValue("term/ConfirmPaste").toBool();
+	r=newprefs.getPrefValue("app/geometry").toRect();
 
-	this->theme=prefs.value("Theme","Linux").toString();
-	this->font.fromString(prefs.value("Font").toString());
 	this->buildMainGui();
-
-	r=prefs.value("app/geometry",QVariant(QRect(50,50,1024,768))).value<QRect>();
 	this->mainWindow->setGeometry(r);
 
 	this->checkMessages=new QTimer();
@@ -411,7 +377,6 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 		{
 			this->doTimer();
 		});
-
 	this->checkMessages->start(this->prefsMsgTimer);
 
 	this->mainWindow->show();
