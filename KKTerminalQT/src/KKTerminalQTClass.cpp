@@ -241,10 +241,6 @@ void KKTerminalQTClass::addTerminal(void)
 
 	newconsole->addCustomColorSchemeDir(DATADIR "/themes");
 	newconsole->setColorScheme(this->theme);
-
-//newconsole->setColorScheme("/tmp/usr1.colorscheme");
-
-
 	newconsole->setTerminalFont(this->font);
 	newconsole->setKeyBindings("linux");
 	newconsole->setScrollBarPosition(QTermWidget::ScrollBarRight);
