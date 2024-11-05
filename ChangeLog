@@ -1,4 +1,6 @@
 0.1.1
+Code clean.
+Fixed some memory leaks in prefs class.
 Set default theme to 'Linux' on 1st run.
 Sort theme names in prefs.
 Added confirm multiline paste to prefs ( 'Paste I Quotes' is considered to be one line ).

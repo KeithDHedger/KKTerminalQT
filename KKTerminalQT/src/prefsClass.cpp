@@ -134,7 +134,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 
 	this->dialogPrefs.theDialog=new QDialog();
 	this->dialogPrefs.theDialog->setWindowTitle(title);
-	this->dialogPrefs.theDialog->setGeometry(defaults.value("prefsgeometry",QRect(100,100,320,128)).toRect());
+	this->dialogPrefs.theDialog->setGeometry(defaults.value("prefsgeometry",QRect(100,100,350,128)).toRect());
 	QObject::connect(cancelbutton,&QPushButton::clicked,[this]()
 		{
 			this->dialogPrefs.theDialog->reject();
@@ -157,6 +157,27 @@ void prefsClass::createDialog(QString title,QStringList items)
 	j=0;
 	while(j<items.size())
 		{
+			//edits
+			if(items.at(j).compare("edit")==0)
+				{
+					hbox=new QWidget;
+					hlayout=new QHBoxLayout;
+					hlayout->setContentsMargins(0,0,0,0);
+					hbox->setLayout(hlayout);
+					j++;
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					hlayout->addWidget(new QLabel(labelstr),1);
+					prefsentry.replace(" ","");
+					this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt]=prefsentry;
+					j++;
+					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt],items.at(j)).toString());
+					hlayout->addWidget(this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt],1);
+					docvlayout->addWidget(hbox);
+					this->dialogPrefs.editBoxCnt++;
+				}
+
 			//combo
 			if(items.at(j).compare("combostart")==0)
 				{
@@ -166,11 +187,11 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hbox->setLayout(hlayout);
 					j++;
 					labelstr=items.at(j);
-					labelstr.replace(QRegularExpression("^.*/"),"");
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
 					hlayout->addWidget(new QLabel(labelstr),1);
 					this->dialogPrefs.comboBoxes[this->dialogPrefs.comboBoxCnt]=new QComboBox();
-					prefsentry=items.at(j).trimmed();
-					prefsentry.replace(QRegularExpression(" "),"");
+					prefsentry.replace(" ","");
 					this->dialogPrefs.comboBoxesPrefsName[this->dialogPrefs.comboBoxCnt]=prefsentry;
 					j++;
 					QString defstr=items.at(j).trimmed();
@@ -187,26 +208,6 @@ void prefsClass::createDialog(QString title,QStringList items)
 					this->dialogPrefs.comboBoxCnt++;
 				}
 
-			//edits
-			if(items.at(j).compare("edit")==0)
-				{
-					hbox=new QWidget;
-					hlayout=new QHBoxLayout;
-					hlayout->setContentsMargins(0,0,0,0);
-					hbox->setLayout(hlayout);
-					j++;
-					labelstr=items.at(j);
-					labelstr.replace(QRegularExpression("^.*/"),"");
-					hlayout->addWidget(new QLabel(labelstr),1);
-					prefsentry=items.at(j).trimmed();
-					prefsentry.replace(QRegularExpression(" "),"");
-					this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt]=prefsentry;
-					j++;
-					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt],items.at(j)).toString());
-					hlayout->addWidget(this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt],1);
-					docvlayout->addWidget(hbox);
-					this->dialogPrefs.editBoxCnt++;
-				}
 
 			//checkboxes
 			if(items.at(j).compare("check")==0)
@@ -216,11 +217,11 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout->setContentsMargins(0,0,0,0);
 					hbox->setLayout(hlayout);
 					j++;
-					prefsentry=items.at(j).trimmed();
-					prefsentry.replace(QRegularExpression(" "),"");
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					prefsentry.replace(" ","");
 					this->dialogPrefs.checkBoxesPrefsName[this->dialogPrefs.checkBoxCnt]=prefsentry;
-					labelstr=items.at(j);
-					labelstr.replace(QRegularExpression("^.*/"),"");
 					this->dialogPrefs.checkBoxes[this->dialogPrefs.checkBoxCnt]=new QCheckBox(labelstr);
 					j++;
 					this->dialogPrefs.checkBoxes[this->dialogPrefs.checkBoxCnt]->setChecked(defaults.value(this->dialogPrefs.checkBoxesPrefsName[this->dialogPrefs.checkBoxCnt],items.at(j)).toBool());
@@ -236,18 +237,18 @@ void prefsClass::createDialog(QString title,QStringList items)
 					QWidget *hbox2=new QWidget;
 					hlayout=new QHBoxLayout;
 					QHBoxLayout *hlayout2=new QHBoxLayout;
-					QPushButton *pb;
-					int			thisnumber;
+					QPushButton *pb=NULL;
+					int			thisnumber=0;
 					hlayout->setContentsMargins(0,0,0,0);
 					hlayout->setSpacing(0);
 					hlayout2->setContentsMargins(3,0,0,0);
 					hlayout2->setSpacing(0);
 					j++;
-					labelstr=items.at(j);
-					labelstr.replace(QRegularExpression("^.*/"),"");
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					prefsentry.replace(" ","");
 					hlayout->addWidget(new QLabel(labelstr),2);
-					prefsentry=items.at(j).trimmed();
-					prefsentry.replace(QRegularExpression(" "),"");
 					this->dialogPrefs.colourBoxesPrefsName[this->dialogPrefs.colourBoxCnt]=prefsentry;
 					j++;
 					pb=new QPushButton("C");
@@ -284,9 +285,9 @@ void prefsClass::createDialog(QString title,QStringList items)
 				{
 					QWidget		*hbox2=new QWidget;
 					QHBoxLayout	*hlayout2=new QHBoxLayout;
-					QPushButton	*pb;
+					QPushButton	*pb=NULL;
 					QFont		font;
-					int			thisnumber;
+					int			thisnumber=0;
 
 					hlayout=new QHBoxLayout;
 					hbox=new QWidget;
@@ -295,11 +296,11 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout2->setContentsMargins(3,0,0,0);
 					hlayout2->setSpacing(0);
 					j++;
-					QString l=items.at(j);
-					l.replace(QRegularExpression("^.*/"),"");
-					hlayout->addWidget(new QLabel(l),2);
-					prefsentry=items.at(j).trimmed();
-					prefsentry.replace(QRegularExpression(" "),"");
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					prefsentry.replace(" ","");
+					hlayout->addWidget(new QLabel(labelstr),2);
 					this->dialogPrefs.fontBoxesPrefsName[this->dialogPrefs.fontBoxCnt]=prefsentry;
 					j++;
 					pb=new QPushButton("F");
@@ -312,7 +313,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 					thisnumber=this->dialogPrefs.fontBoxCnt;
 					QObject::connect(pb,&QPushButton::clicked,[this,pb,thisnumber]()
 						{
-							bool		ok;
+							bool		ok=false;
 							QFont	tfont;
 							QFont	font;
 
@@ -366,6 +367,4 @@ void prefsClass::createDialog(QString title,QStringList items)
 			for(int j=0;j<this->dialogPrefs.fontBoxCnt;j++)
 				prefs.setValue(this->dialogPrefs.fontBoxesPrefsName[j],this->dialogPrefs.fontBoxes[j]->text());
 		}
-
-	return;
 }

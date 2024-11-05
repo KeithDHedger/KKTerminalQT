@@ -17,7 +17,7 @@ Add detachable tabs?<br>
 <s>Redo prefs</s><br>
 Keyboard nav<br>
 <s>Window title<br></s>
-Man page<br>
+<s>Man page</s><br>
 <s>Cli args<br></s>
 Sessions ?<br>
 
