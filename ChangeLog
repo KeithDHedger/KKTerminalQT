@@ -1,4 +1,6 @@
 0.1.1
+Added RootColours theme.
+Added theme folder ( /usr/share/KKTerminalQT/themes ).
 Code clean.
 Fixed some memory leaks in prefs class.
 Set default theme to 'Linux' on 1st run.

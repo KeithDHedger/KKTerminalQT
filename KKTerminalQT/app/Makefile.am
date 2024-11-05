@@ -10,6 +10,9 @@ kkterminalqt_CXXFLAGS = -O3
 pixfilesdir = $(pkgdatadir)/pixmaps
 pixfiles_DATA = ../resources/pixmaps/*
 
+userthemesdir = $(pkgdatadir)/themes
+userthemes_DATA = ../resources/themes/*
+
 bin_PROGRAMS = kkterminalqt
 
 man1_MANS = ../resources/man/kkterminalqt.1
