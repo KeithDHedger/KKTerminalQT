@@ -25,6 +25,8 @@
 #include <QtWidgets>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QDialogButtonBox>
+#include <QDialog>
 
 #include <stdio.h>
 
@@ -48,6 +50,9 @@ struct prefsReturnStruct
 	QHash<int,QLineEdit*>	fontBoxes;
 	QHash<int,QString>		fontBoxesPrefsName;
 	int						fontBoxCnt=0;
+	QHash<int,QLineEdit*>	fileBoxes;
+	QHash<int,QString>		fileBoxesPrefsName;
+	int						fileBoxCnt=0;
 
 	bool						valid=false;
 };

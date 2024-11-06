@@ -40,6 +40,9 @@ prefsClass::~prefsClass()
 	for(int j=0;j<this->dialogPrefs.fontBoxCnt;j++)
 		delete this->dialogPrefs.fontBoxes[j];
 
+	for(int j=0;j<this->dialogPrefs.fileBoxCnt;j++)
+		delete this->dialogPrefs.fileBoxes[j];
+
 	delete this->dialogPrefs.theDialog;
 }
 
@@ -125,34 +128,16 @@ void prefsClass::createDialog(QString title,QStringList items)
 	QWidget					*hbox=NULL;
 	QVBoxLayout				*docvlayout=new QVBoxLayout;
 	QHBoxLayout				*hlayout=NULL;
-	QPushButton				*cancelbutton=new QPushButton("&Cancel");
-	QPushButton				*okbutton=new QPushButton("&Apply");
 	QString					prefsentry;
 	QSettings				defaults;
 	int						j=0;
 	QString					labelstr;
+	QFrame					f;
 
+	f.setFrameStyle(QFrame::HLine|QFrame::Plain);
 	this->dialogPrefs.theDialog=new QDialog();
 	this->dialogPrefs.theDialog->setWindowTitle(title);
-	this->dialogPrefs.theDialog->setGeometry(defaults.value("prefsgeometry",QRect(100,100,350,128)).toRect());
-	QObject::connect(cancelbutton,&QPushButton::clicked,[this]()
-		{
-			this->dialogPrefs.theDialog->reject();
-			this->dialogPrefs.valid=false;
-		});
-	QObject::connect(okbutton,&QPushButton::clicked,[this]()
-		{
-			QSettings	defaults;
-			QRect		rf,rg;
-
-			rg=this->dialogPrefs.theDialog->geometry();
-			rf=this->dialogPrefs.theDialog->frameGeometry();
-			rf.setHeight(rf.height()-(rf.height()-rg.height()));
-			rf.setWidth(rf.width()-(rf.width()-rg.width()));
-			defaults.setValue("prefsgeometry",rf);
-			this->dialogPrefs.theDialog->accept();
-			this->dialogPrefs.valid=true;
-		});
+	this->dialogPrefs.theDialog->setGeometry(defaults.value("prefsgeometry",QRect(100,100,320,128)).toRect());
 
 	j=0;
 	while(j<items.size())
@@ -208,7 +193,6 @@ void prefsClass::createDialog(QString title,QStringList items)
 					this->dialogPrefs.comboBoxCnt++;
 				}
 
-
 			//checkboxes
 			if(items.at(j).compare("check")==0)
 				{
@@ -238,7 +222,6 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout=new QHBoxLayout;
 					QHBoxLayout *hlayout2=new QHBoxLayout;
 					QPushButton *pb=NULL;
-					int			thisnumber=0;
 					hlayout->setContentsMargins(0,0,0,0);
 					hlayout->setSpacing(0);
 					hlayout2->setContentsMargins(3,0,0,0);
@@ -251,25 +234,24 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout->addWidget(new QLabel(labelstr),2);
 					this->dialogPrefs.colourBoxesPrefsName[this->dialogPrefs.colourBoxCnt]=prefsentry;
 					j++;
-					pb=new QPushButton("C");
+					pb=new QPushButton(QIcon::fromTheme("preferences-desktop-theme"),"");
 					pb->setMaximumWidth(24);
 					hlayout2->addWidget(pb,1);
 					this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.colourBoxesPrefsName[this->dialogPrefs.colourBoxCnt],items.at(j)).toString());	
 					this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]->setStyleSheet(QString("background: %1;\ncolor: %2;").arg(this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]->text()).arg(this->bestFontColour(this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]->text())));
 					this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]->update();
-					thisnumber=this->dialogPrefs.colourBoxCnt;
-					QObject::connect(pb,&QPushButton::clicked,[this,pb,thisnumber]()
+					QObject::connect(pb,&QPushButton::clicked,[this,pb,cbnum=this->dialogPrefs.colourBoxCnt]()
 						{
 							QColor colour;
 							
-							colour=QColorDialog::getColor(this->dialogPrefs.colourBoxes[thisnumber]->text(),nullptr,"Select Colour",QColorDialog::ShowAlphaChannel);
+							colour=QColorDialog::getColor(this->dialogPrefs.colourBoxes[cbnum]->text(),nullptr,"Select Colour",QColorDialog::ShowAlphaChannel);
 							if(colour.isValid()==true)
 								{
 									QString s;
 									s=QString("background: %1;\ncolor: %2;").arg(colour.name(QColor::HexArgb)).arg(this->bestFontColour(colour.name(QColor::HexArgb)));
-									this->dialogPrefs.colourBoxes[thisnumber]->setStyleSheet(s);//ding ding ding
-									this->dialogPrefs.colourBoxes[thisnumber]->update();
-									this->dialogPrefs.colourBoxes[thisnumber]->setText(colour.name(QColor::HexArgb));
+									this->dialogPrefs.colourBoxes[cbnum]->setStyleSheet(s);//ding ding ding
+									this->dialogPrefs.colourBoxes[cbnum]->update();
+									this->dialogPrefs.colourBoxes[cbnum]->setText(colour.name(QColor::HexArgb));
 								}
 						});
 					hlayout2->addWidget(this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt],2);
@@ -287,7 +269,6 @@ void prefsClass::createDialog(QString title,QStringList items)
 					QHBoxLayout	*hlayout2=new QHBoxLayout;
 					QPushButton	*pb=NULL;
 					QFont		font;
-					int			thisnumber=0;
 
 					hlayout=new QHBoxLayout;
 					hbox=new QWidget;
@@ -303,27 +284,26 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout->addWidget(new QLabel(labelstr),2);
 					this->dialogPrefs.fontBoxesPrefsName[this->dialogPrefs.fontBoxCnt]=prefsentry;
 					j++;
-					pb=new QPushButton("F");
+					pb=new QPushButton(QIcon::fromTheme("font-x-generic"),"");
 					pb->setMaximumWidth(24);
 					hlayout2->addWidget(pb,1);
 					this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.fontBoxesPrefsName[this->dialogPrefs.fontBoxCnt],items.at(j)).toString());	
 					font.fromString(this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]->text());
 					this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]->setFont(font);
 					this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]->update();
-					thisnumber=this->dialogPrefs.fontBoxCnt;
-					QObject::connect(pb,&QPushButton::clicked,[this,pb,thisnumber]()
+					QObject::connect(pb,&QPushButton::clicked,[this,pb,fbnum=this->dialogPrefs.fontBoxCnt]()
 						{
 							bool		ok=false;
 							QFont	tfont;
 							QFont	font;
 
-							tfont.fromString(this->dialogPrefs.fontBoxes[thisnumber]->text());
+							tfont.fromString(this->dialogPrefs.fontBoxes[fbnum]->text());
 							font=QFontDialog::getFont(&ok,tfont,nullptr,"Seleect Font");
 							if(ok==true)
 								{
-									this->dialogPrefs.fontBoxes[thisnumber]->setText(font.toString());
-									this->dialogPrefs.fontBoxes[thisnumber]->setFont(font);
-									this->dialogPrefs.fontBoxes[thisnumber]->update();
+									this->dialogPrefs.fontBoxes[fbnum]->setText(font.toString());
+									this->dialogPrefs.fontBoxes[fbnum]->setFont(font);
+									this->dialogPrefs.fontBoxes[fbnum]->update();
 								}
 						});
 					hlayout2->addWidget(this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt],2);
@@ -333,20 +313,121 @@ void prefsClass::createDialog(QString title,QStringList items)
 					docvlayout->addWidget(hbox);
 					this->dialogPrefs.fontBoxCnt++;
 				}
+
+			//files
+			if(items.at(j).compare("file")==0)
+				{
+					QWidget		*hbox2=new QWidget;
+					QHBoxLayout	*hlayout2=new QHBoxLayout;
+					QPushButton	*pb=NULL;
+
+					hlayout=new QHBoxLayout;
+					hbox=new QWidget;
+					hlayout->setContentsMargins(0,0,0,0);
+					hlayout->setSpacing(0);
+					hlayout2->setContentsMargins(3,0,0,0);
+					hlayout2->setSpacing(0);
+					j++;
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					prefsentry.replace(" ","");
+					hlayout->addWidget(new QLabel(labelstr),2);
+					this->dialogPrefs.fileBoxesPrefsName[this->dialogPrefs.fileBoxCnt]=prefsentry;
+					j++;
+					pb=new QPushButton(QIcon::fromTheme("text-x-generic"),"");
+					pb->setMaximumWidth(24);
+					hlayout2->addWidget(pb,1);
+					this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.fileBoxesPrefsName[this->dialogPrefs.fileBoxCnt],items.at(j)).toString());	
+					QObject::connect(pb,&QPushButton::clicked,[this,pb,filenum=this->dialogPrefs.fileBoxCnt]()
+						{
+							QString filename=QFileDialog::getOpenFileName(nullptr,"Select File",this->dialogPrefs.fileBoxes[filenum]->text());
+							if(filename.isEmpty()==false)
+								this->dialogPrefs.fileBoxes[filenum]->setText(filename);
+						});
+					hlayout2->addWidget(this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt],2);
+					hbox2->setLayout(hlayout2);
+					hbox->setLayout(hlayout);
+					hlayout->addWidget(hbox2,2);
+					docvlayout->addWidget(hbox);
+					this->dialogPrefs.fileBoxCnt++;
+				}
+
+			//foldres
+			if(items.at(j).compare("folder")==0)
+				{
+					QWidget		*hbox2=new QWidget;
+					QHBoxLayout	*hlayout2=new QHBoxLayout;
+					QPushButton	*pb=NULL;
+
+					hlayout=new QHBoxLayout;
+					hbox=new QWidget;
+					hlayout->setContentsMargins(0,0,0,0);
+					hlayout->setSpacing(0);
+					hlayout2->setContentsMargins(3,0,0,0);
+					hlayout2->setSpacing(0);
+					j++;
+					labelstr=items.at(j).trimmed();
+					prefsentry=labelstr;
+					labelstr=labelstr.mid(labelstr.lastIndexOf("/")+1,-1);
+					prefsentry.replace(" ","");
+					hlayout->addWidget(new QLabel(labelstr),2);
+					this->dialogPrefs.fileBoxesPrefsName[this->dialogPrefs.fileBoxCnt]=prefsentry;
+					j++;
+					pb=new QPushButton(QIcon::fromTheme("folder"),"");
+
+					pb->setMaximumWidth(24);
+					hlayout2->addWidget(pb,1);
+					this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.fileBoxesPrefsName[this->dialogPrefs.fileBoxCnt],items.at(j)).toString());	
+					QObject::connect(pb,&QPushButton::clicked,[this,pb,foldnum=this->dialogPrefs.fileBoxCnt]()
+						{
+							QString foldername=QFileDialog::getExistingDirectory(nullptr,"Select Folder",this->dialogPrefs.fileBoxes[foldnum]->text());
+							if(foldername.isEmpty()==false)
+								this->dialogPrefs.fileBoxes[foldnum]->setText(foldername);
+						});
+					hlayout2->addWidget(this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt],2);
+					hbox2->setLayout(hlayout2);
+					hbox->setLayout(hlayout);
+					hlayout->addWidget(hbox2,2);
+					docvlayout->addWidget(hbox);
+					this->dialogPrefs.fileBoxCnt++;
+				}
 			j++;
 		}
 
-	hbox=new QWidget;
-	hlayout=new QHBoxLayout;
-	hlayout->setContentsMargins(0,8,0,0);
-	hbox->setLayout(hlayout);
-	hlayout->addWidget(cancelbutton);
-	hlayout->addStretch(0);
-	hlayout->addWidget(okbutton);
+	QDialogButtonBox bb(QDialogButtonBox::Apply|QDialogButtonBox::Cancel);
+	QObject::connect(&bb,&QDialogButtonBox::clicked,[this,&bb](QAbstractButton *button)
+		{
+			switch(bb.standardButton(button))
+				{
+					case QDialogButtonBox::Apply:
+						{
+							QSettings	defaults;
+							QRect		rf,rg;
 
-	docvlayout->addWidget(hbox);
+							rg=this->dialogPrefs.theDialog->geometry();
+							rf=this->dialogPrefs.theDialog->frameGeometry();
+							rf.setHeight(rf.height()-(rf.height()-rg.height()));
+							rf.setWidth(rf.width()-(rf.width()-rg.width()));
+							defaults.setValue("prefsgeometry",rf);
+							this->dialogPrefs.theDialog->accept();
+							this->dialogPrefs.valid=true;
+						}			
+						break;
 
+					case QDialogButtonBox::Cancel:
+						this->dialogPrefs.theDialog->reject();
+						this->dialogPrefs.valid=false;
+						break;
+					default:
+						break;
+				}
+		});
+
+	docvlayout->addWidget(&f);
+	docvlayout->addWidget(&bb);
 	this->dialogPrefs.theDialog->setLayout(docvlayout);
+
 	int res=this->dialogPrefs.theDialog->exec();
 	if(res==1)
 		{
@@ -366,5 +447,8 @@ void prefsClass::createDialog(QString title,QStringList items)
 
 			for(int j=0;j<this->dialogPrefs.fontBoxCnt;j++)
 				prefs.setValue(this->dialogPrefs.fontBoxesPrefsName[j],this->dialogPrefs.fontBoxes[j]->text());
+
+			for(int j=0;j<this->dialogPrefs.fileBoxCnt;j++)
+				prefs.setValue(this->dialogPrefs.fileBoxesPrefsName[j],this->dialogPrefs.fileBoxes[j]->text());
 		}
 }
