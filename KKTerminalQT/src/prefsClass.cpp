@@ -284,7 +284,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hlayout->addWidget(new QLabel(labelstr),2);
 					this->dialogPrefs.fontBoxesPrefsName[this->dialogPrefs.fontBoxCnt]=prefsentry;
 					j++;
-					pb=new QPushButton(QIcon::fromTheme("font-x-generic"),"");
+					pb=new QPushButton(QIcon::fromTheme("preferences-desktop-font"),"");
 					pb->setMaximumWidth(24);
 					hlayout2->addWidget(pb,1);
 					this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.fontBoxesPrefsName[this->dialogPrefs.fontBoxCnt],items.at(j)).toString());	
