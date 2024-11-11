@@ -30,13 +30,12 @@ void signalHandler(int signalNum)
 int main (int argc, char **argv)
 {
 	bool				forcedg=false;
-
 	int				status;
 	QDir				commsDir;
 	QApplication		*napp;
 
-	for (int i=1;i<argc;++i)
-		if (QString(argv[i]).compare("--qwindowgeometry")==0)
+	for(int i=1;i<argc;++i)
+		if(qstrcmp(argv[i],"--qwindowgeometry")==0)
 			forcedg=true;
 
 	napp=new QApplication(argc,argv);
