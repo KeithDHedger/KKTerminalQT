@@ -196,6 +196,11 @@ void KKTerminalQTClass::addTerminal(void)
 	newconsole->setContextMenuPolicy(Qt::CustomContextMenu);
 	newconsole->setBlinkingCursor(this->blinkCursor);
 	newconsole->setConfirmMultilinePaste(this->confirmMLPaste);
+//newconsole->setAutoClose(true);
+//	QObject::connect(newconsole,&QTermWidget::finished,[this,newconsole]()
+//		{
+//			qDebug()<<"end";
+//		});
 //newconsole->setKeyboardCursorShape(Konsole::Emulation::KeyboardCursorShape::UnderlineCursor);//both
 //newconsole->setTerminalBackgroundImage("/home/keithhedger/Backgrounds/rage.png");//both
 //newconsole->setTerminalBackgroundMode(0);//both
@@ -372,7 +377,6 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 
 	this->buildMainGui();
 	this->mainWindow->setGeometry(r);
-
 	this->checkMessages=new QTimer();
 	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
 		{
@@ -389,6 +393,8 @@ void KKTerminalQTClass::writeExitData(void)
 	QRect		rf;
 	QSettings	prefs;
 
+	if(this->forcedGeom==true)
+		return;
 	rg=this->mainWindow->geometry();
 	rf=this->mainWindow->frameGeometry();
 	rf.setHeight(rf.height()-(rf.height()-rg.height()));

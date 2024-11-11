@@ -43,6 +43,7 @@ class KKTerminalQTClass : public QObject
 		bool						startBlank=false;
 		bool						blinkCursor=false;
 		bool						confirmMLPaste=false;
+		bool						forcedGeom=false;
 
 //app functions
 		void						handleSignal(int signum);

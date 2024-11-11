@@ -29,16 +29,24 @@ void signalHandler(int signalNum)
 
 int main (int argc, char **argv)
 {
+	bool				forcedg=false;
+
 	int				status;
 	QDir				commsDir;
-	QApplication		*napp=new QApplication(argc,argv);
+	QApplication		*napp;
 
+	for (int i=1;i<argc;++i)
+		if (QString(argv[i]).compare("--qwindowgeometry")==0)
+			forcedg=true;
+
+	napp=new QApplication(argc,argv);
 	napp->setOrganizationName("KDHedger");
 	napp->setApplicationName("KKTerminalQT");
 	napp->setApplicationVersion(PACKAGE_VERSION);
 	QIcon::setFallbackThemeName("gnome");
 
 	kkterminalqt=new KKTerminalQTClass(napp);
+	kkterminalqt->forcedGeom=forcedg;
 	signal(SIGUSR1,signalHandler);
 	signal(SIGTERM,signalHandler);
 	signal(SIGINT,signalHandler);
@@ -56,7 +64,7 @@ int main (int argc, char **argv)
 	});
 
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
-	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")))
+	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")) || (kkterminalqt->parser.isSet("command")))
 		kkterminalqt->startBlank=true;
 
 	if(kkterminalqt->parser.isSet("key"))
@@ -103,7 +111,7 @@ int main (int argc, char **argv)
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
 		}
-
+     
 	kkterminalqt->initApp(argc,argv);
 	kkterminalqt->runCLICommands(siapp->queueID);
 	kill(atoi(siapp->queueAddr),SIGUSR1);
