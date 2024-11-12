@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Tue 12 Nov 13:54:11 GMT 2024 keithdhedger@gmail.com
+ * ©K. D. Hedger. Tue 12 Nov 14:18:56 GMT 2024 keithdhedger@gmail.com
 
  * This file (prefsClass.cpp) is part of KKTerminalQT.
 
@@ -160,6 +160,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]=new QLineEdit(defaults.value(this->dialogPrefs.editBoxesPrefsName[this->dialogPrefs.editBoxCnt],items.at(j)).toString());
 					hlayout->addWidget(this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt],1);
 					docvlayout->addWidget(hbox);
+					this->dialogPrefs.editBoxes[this->dialogPrefs.editBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.editBoxCnt++;
 				}
 
@@ -252,6 +253,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 									this->dialogPrefs.colourBoxes[cbnum]->setStyleSheet(s);//ding ding ding
 									this->dialogPrefs.colourBoxes[cbnum]->update();
 									this->dialogPrefs.colourBoxes[cbnum]->setText(colour.name(QColor::HexArgb));
+									this->dialogPrefs.colourBoxes[cbnum]->setCursorPosition(0);
 								}
 						});
 					hlayout2->addWidget(this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt],2);
@@ -259,6 +261,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hbox->setLayout(hlayout);
 					hlayout->addWidget(hbox2,2);
 					docvlayout->addWidget(hbox);
+					this->dialogPrefs.colourBoxes[this->dialogPrefs.colourBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.colourBoxCnt++;
 				}
 
@@ -302,6 +305,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 							if(ok==true)
 								{
 									this->dialogPrefs.fontBoxes[fbnum]->setText(font.toString());
+									this->dialogPrefs.fontBoxes[fbnum]->setCursorPosition(0);
 									this->dialogPrefs.fontBoxes[fbnum]->setFont(font);
 									this->dialogPrefs.fontBoxes[fbnum]->update();
 								}
@@ -311,6 +315,7 @@ void prefsClass::createDialog(QString title,QStringList items)
 					hbox->setLayout(hlayout);
 					hlayout->addWidget(hbox2,2);
 					docvlayout->addWidget(hbox);
+					this->dialogPrefs.fontBoxes[this->dialogPrefs.fontBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.fontBoxCnt++;
 				}
 
@@ -343,13 +348,17 @@ void prefsClass::createDialog(QString title,QStringList items)
 						{
 							QString filename=QFileDialog::getOpenFileName(nullptr,"Select File",this->dialogPrefs.fileBoxes[filenum]->text());
 							if(filename.isEmpty()==false)
-								this->dialogPrefs.fileBoxes[filenum]->setText(filename);
+								{
+									this->dialogPrefs.fileBoxes[filenum]->setText(filename);
+									this->dialogPrefs.fileBoxes[filenum]->setCursorPosition(0);
+								}
 						});
 					hlayout2->addWidget(this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt],2);
 					hbox2->setLayout(hlayout2);
 					hbox->setLayout(hlayout);
 					hlayout->addWidget(hbox2,2);
 					docvlayout->addWidget(hbox);
+					this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.fileBoxCnt++;
 				}
 
@@ -383,13 +392,17 @@ void prefsClass::createDialog(QString title,QStringList items)
 						{
 							QString foldername=QFileDialog::getExistingDirectory(nullptr,"Select Folder",this->dialogPrefs.fileBoxes[foldnum]->text());
 							if(foldername.isEmpty()==false)
-								this->dialogPrefs.fileBoxes[foldnum]->setText(foldername);
+								{
+									this->dialogPrefs.fileBoxes[foldnum]->setText(foldername);
+									this->dialogPrefs.fileBoxes[foldnum]->setCursorPosition(0);
+								}
 						});
 					hlayout2->addWidget(this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt],2);
 					hbox2->setLayout(hlayout2);
 					hbox->setLayout(hlayout);
 					hlayout->addWidget(hbox2,2);
 					docvlayout->addWidget(hbox);
+					this->dialogPrefs.fileBoxes[this->dialogPrefs.fileBoxCnt]->setCursorPosition(0);
 					this->dialogPrefs.fileBoxCnt++;
 				}
 			j++;
