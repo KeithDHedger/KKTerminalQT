@@ -49,8 +49,7 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->mainNotebook->setMovable(true);
 	QObject::connect(this->mainNotebook,&QTabWidget::tabCloseRequested,[this](int index)
 		{
-			if(this->mainNotebook->count()==0)
-				this->currentConsole=NULL;
+			this->currentConsole=NULL;
 			delete this->mainNotebook->widget(index);
 		});
 	QObject::connect(this->mainNotebook,&QTabWidget::currentChanged,[this](int index)
@@ -94,7 +93,7 @@ void KKTerminalQTClass::buildMainGui(void)
 			prefsClass	newprefs;
 
 			themes.sort();
-			prfs<<"combostart"<<"term/Theme"<<"Linux"<<themes<<"comboend"<<"font"<<"term/Font"<<"Monospace,10,-1,5,50,0,0,0,0,0"<<"check"<<"term/Blink Cursor"<<"0"<<"check"<<"term/Confirm Paste"<<"0";
+			prfs<<"combostart"<<"term/Theme"<<"Linux"<<themes<<"comboend"<<"font"<<"term/Font"<<"Monospace,10,-1,5,50,0,0,0,0,0"<<"check"<<"term/Blink Cursor"<<"0"<<"check"<<"term/Confirm Paste"<<"0"<<"check"<<"term/Close Tab On Exit"<<"0";
 			newprefs.createDialog("KKTerminalQT Prefs Class",prfs);
 			if(newprefs.dialogPrefs.valid==true)
 				{
@@ -106,7 +105,7 @@ void KKTerminalQTClass::buildMainGui(void)
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setBlinkingCursor(this->blinkCursor);
 					this->confirmMLPaste=newprefs.dialogPrefs.checkBoxes.value(CONFIRMPASTEBOX)->isChecked();
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setConfirmMultilinePaste(this->confirmMLPaste);
-					
+					this->closeTabOnExit=newprefs.dialogPrefs.checkBoxes.value(CLOSETABONEXIT)->isChecked();					
 					newprefs.writePrefs();
 				}
 		});
@@ -192,6 +191,17 @@ void KKTerminalQTClass::addTerminal(void)
 		{
 			this->mainWindow->setWindowTitle(newconsole->workingDirectory());
 			this->currentConsole=newconsole;
+		});
+
+	QObject::connect(newconsole,&QTermWidget::finished,[this,newconsole]()
+		{
+			if(this->closeTabOnExit==false)
+				return;
+			for(int j=0;j<this->mainNotebook->count();j++)
+				{
+					if(this->mainNotebook->widget(j)==newconsole)
+						this->mainNotebook->removeTab(j);
+				}
 		});
 	newconsole->setContextMenuPolicy(Qt::CustomContextMenu);
 	newconsole->setBlinkingCursor(this->blinkCursor);
@@ -359,7 +369,7 @@ void KKTerminalQTClass::doTimer(void)
 void KKTerminalQTClass::initApp(int argc,char** argv)
 {
 	QRect		r(100,100,800,400);
-	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry"};
+	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry","term/CloseTabOnExit"};
 	prefsClass	newprefs;
 
 	newprefs.setPrefs(prfs);
@@ -367,12 +377,14 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	newprefs.setPrefValue("term/Theme",QVariant("Linux").toString());
 	newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
 	newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
+	newprefs.setPrefValue("term/CloseTabOnExit",QVariant(false).toBool());
 	newprefs.setPrefValue("app/geometry",QVariant(r));
 	newprefs.readPrefs();
 	this->theme=newprefs.getPrefValue("term/Theme").toString();
 	this->font.fromString(newprefs.getPrefValue("term/Font").toString());
 	this->blinkCursor=newprefs.getPrefValue("term/BlinkCursor").toBool();
 	this->confirmMLPaste=newprefs.getPrefValue("term/ConfirmPaste").toBool();
+	this->closeTabOnExit=newprefs.getPrefValue("term/CloseTabOnExit").toBool();
 	r=newprefs.getPrefValue("app/geometry").toRect();
 
 	this->buildMainGui();

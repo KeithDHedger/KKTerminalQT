@@ -64,6 +64,7 @@ struct msgStruct
 #define FONTBOX 0
 #define BLINKBOX 0
 #define CONFIRMPASTEBOX 1
+#define CLOSETABONEXIT 2
 
 #include "prefsClass.h"
 #include "SingleInstanceClass.h"

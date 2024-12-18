@@ -1,4 +1,5 @@
 0.1.1
+Added "close Tab On Exit" to prefs.
 Set cursor pos in font prefs box.
 Dont save window geometry on exit if '--qwindowgeometry' is set on command line.
 Set app default theme to gnome.
