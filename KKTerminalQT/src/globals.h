@@ -31,8 +31,9 @@ enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTCOMM
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/shm.h>
-
-#include <string>
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/stat.h> 
 
 #include <QApplication>
 #include <QtWidgets>

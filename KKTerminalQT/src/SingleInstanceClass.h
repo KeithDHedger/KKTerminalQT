@@ -44,6 +44,10 @@ class SingleInstanceClass
 		char				*queueAddr=NULL;
 		
 		bool				running=false;
+		bool				isMulti=false;
+		sem_t			*semid=NULL;
+		QString			keystr;
+
 	private:
 		QString			appName;
 };

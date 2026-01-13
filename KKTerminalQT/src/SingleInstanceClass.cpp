@@ -84,8 +84,9 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 	int		workspace=-1;
 	int		screen;
 	QString	displaystr;
-	QString	keystr;
+	//QString	keystr;
 	int		cnt=0;
+	bool		reget=false;
 
 	this->appName=name;
 
@@ -105,21 +106,55 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 
 	if(suppliedkey==-1)
 		{
-			keystr=QString("%1%2%3%4").arg(this->appName).arg(workspace).arg(screen).arg(displaystr);
+			this->keystr=QString("%1%2%3%4").arg(this->appName).arg(workspace).arg(screen).arg(displaystr);
 			this->key=hashFromKey(keystr);
 		}
 	else
 		{
 			this->key=suppliedkey;
-			keystr=QString("%1%2").arg(this->appName).arg(this->key);
+			this->keystr=QString("%1%2").arg(this->appName).arg(this->key);
 		}
 
 	this->queueID=msgget(this->key,IPC_CREAT|0660);
 	this->shmKey=hashFromKey(QString("%1%2").arg(keystr).arg("sharedmem"));
 	this->shmQueueID=shmget(this->shmKey,SHSIZE,0);
 
+	if(this->shmQueueID!=-1)
+		{
+			int				maxid;
+			struct shmid_ds	dummy;
+		
+			maxid=shmctl(0,SHM_INFO,&dummy);
+			for(int j=0;j<=maxid;j++)
+				{
+					int				shmid;
+					struct shmid_ds	shmseg;
+					struct ipc_perm	*ipcp=&shmseg.shm_perm;
+
+					shmid=shmctl(j,SHM_STAT,&shmseg);
+					if((shmid<0)  || (ipcp->__key==0))
+						continue;
+
+					//printf("Key=0x%x UID=%i Perms=%o PID=%i\n",ipcp->__key,ipcp->uid,ipcp->mode,shmseg.shm_cpid);
+					if(kill(shmseg.shm_cpid,0)!=0)
+						{
+							system(qPrintable(QString("ipcrm -M %1").arg(ipcp->__key)));
+							shmid=shmctl(j,IPC_RMID,&shmseg);
+							reget=true;
+						}
+				}
+		}
+
+	if(reget==true)
+		{
+			this->queueID=msgget(this->key,IPC_CREAT|0660);
+			this->shmKey=hashFromKey(QString("%1%2").arg(keystr).arg("sharedmem"));
+			this->shmQueueID=shmget(this->shmKey,SHSIZE,0);
+		}
+
 	if(this->shmQueueID==-1)
 		{
+			this->semid=sem_open(this->keystr.toStdString().c_str(),O_CREAT,0600,0);
 			this->shmQueueID=shmget(this->shmKey,SHSIZE,IPC_CREAT|0600);
 			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
 			char		*ptr=this->queueAddr;
@@ -127,17 +162,27 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 			cnt=sprintf(ptr+=cnt,"%s\n",keystr.toStdString().c_str());
 			cnt=sprintf(ptr+=cnt,"0x%x\n",this->key);
 			cnt=sprintf(ptr+=cnt,"%s\n",QString("%1%2").arg(keystr).arg("sharedmem").toStdString().c_str());
+			sem_post(this->semid);
 		}
 	else
 		{
 			this->running=true;
 			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
+			this->semid=sem_open(this->keystr.toStdString().c_str(),0);
 		}
 	XCloseDisplay(display);
 }
 
 SingleInstanceClass::~SingleInstanceClass()
 {
+	if((this->isMulti==true) || (this->running==false))
+		{
+			shmdt(this->queueAddr);
+			shmctl(this->shmQueueID,IPC_RMID,NULL);
+			msgctl(this->queueID,IPC_RMID,NULL);
+			sem_close(this->semid);
+			sem_unlink(this->keystr.toStdString().c_str());
+		}
 }
 
 

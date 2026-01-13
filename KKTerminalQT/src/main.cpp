@@ -83,6 +83,7 @@ int main (int argc, char **argv)
 			kkterminalqt->runCLICommands(siapp->queueID);
 			kill(getpid(),SIGUSR1);
 			kkterminalqt->application->setWindowIcon(QIcon(DATADIR "/pixmaps/" PACKAGE ".png"));
+			siapp->isMulti=true;
 			shmdt(siapp->queueAddr);
 			shmctl(siapp->shmQueueID,IPC_RMID,NULL);
 			status=kkterminalqt->application->exec();

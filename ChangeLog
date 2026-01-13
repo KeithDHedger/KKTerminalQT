@@ -1,4 +1,5 @@
 0.1.1
+Fixed starting up in same workspace after force quit ( kill -SIGKILL pid ).
 Added "Close Tab On Exit" to prefs.
 Set cursor pos in font prefs box.
 Dont save window geometry on exit if '--qwindowgeometry' is set on command line.
