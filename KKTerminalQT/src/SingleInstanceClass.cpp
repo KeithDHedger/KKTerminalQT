@@ -117,25 +117,40 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 
 	this->queueID=msgget(this->key,IPC_CREAT|0660);
 	this->shmKey=hashFromKey(QString("%1%2").arg(keystr).arg("sharedmem"));
-	this->shmQueueID=shmget(this->shmKey,SHSIZE,0);
+	this->shmQueueID=shmget(this->shmKey,SHAREDMEMSIZE,0);
 
+//clean up defunct shared mem.
 	if(this->shmQueueID!=-1)
 		{
 			int				maxid;
 			struct shmid_ds	shmseg;
-		
+	
 			maxid=shmctl(0,SHM_INFO,&shmseg);
 			for(int j=0;j<=maxid;j++)
 				{
 					int				shmid;
+					int				shmidint;
 					struct ipc_perm	*ipcp=&shmseg.shm_perm;
-
+					bool				ismine=false;
 					shmid=shmctl(j,SHM_STAT,&shmseg);
 					if((shmid<0)  || (ipcp->__key==0))
 						continue;
 
-					//printf("Key=0x%x UID=%i Perms=%o PID=%i\n",ipcp->__key,ipcp->uid,ipcp->mode,shmseg.shm_cpid);
-					if(kill(shmseg.shm_cpid,0)!=0)
+					//printf("Key=0x%x UID=%i Perms=%o PID=%i Size=%i\n\n",ipcp->__key,ipcp->uid,ipcp->mode,shmseg.shm_cpid,shmseg.shm_segsz);
+					shmidint=shmget(ipcp->__key,SHAREDMEMSIZE,0666);
+					char *shared_memory=(char*)shmat(shmidint,NULL,0);
+					char *shared_memorycopy=strdup(shared_memory);
+					char *line=strtok(shared_memorycopy,"\n"); // Split by newline
+					while(line != NULL)
+						{
+							if(strcmp(line,"KKEditOrKKTerminal")==0)
+								ismine=true;
+       						// printf("%s\n", line); // Print the line
+       						line=strtok(NULL,"\n"); // Get the next line
+						}
+					shmdt(shared_memory);
+					free(shared_memorycopy);
+					if((ismine==true) && (kill(shmseg.shm_cpid,0)!=0))
 						{
 							int id=shmget(ipcp->__key,0,0);
 							int ret=shmctl(id,IPC_RMID,NULL);
@@ -151,19 +166,20 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 		{
 			this->queueID=msgget(this->key,IPC_CREAT|0660);
 			this->shmKey=hashFromKey(QString("%1%2").arg(keystr).arg("sharedmem"));
-			this->shmQueueID=shmget(this->shmKey,SHSIZE,0);
+			this->shmQueueID=shmget(this->shmKey,SHAREDMEMSIZE,0);
 		}
 
 	if(this->shmQueueID==-1)
 		{
 			this->semid=sem_open(this->keystr.toStdString().c_str(),O_CREAT,0600,0);
-			this->shmQueueID=shmget(this->shmKey,SHSIZE,IPC_CREAT|0600);
+			this->shmQueueID=shmget(this->shmKey,SHAREDMEMSIZE,IPC_CREAT|0600);
 			this->queueAddr=(char*)shmat(this->shmQueueID,NULL,SHM_W);
-			char		*ptr=this->queueAddr;
+			char *ptr=this->queueAddr;
 			cnt=sprintf(ptr,"%i\n",getpid());
 			cnt=sprintf(ptr+=cnt,"%s\n",keystr.toStdString().c_str());
 			cnt=sprintf(ptr+=cnt,"0x%x\n",this->key);
 			cnt=sprintf(ptr+=cnt,"%s\n",QString("%1%2").arg(keystr).arg("sharedmem").toStdString().c_str());
+			cnt=sprintf(ptr+=cnt,"KKEditOrKKTerminal\n");
 			sem_post(this->semid);
 		}
 	else
