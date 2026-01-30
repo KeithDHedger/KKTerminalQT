@@ -60,6 +60,9 @@ class KKTerminalQTClass : public QObject
 		QMenu					*fileMenu;
 //edit menu
 		QMenu					*editMenu;
+//snipits menu
+		QMenu					*snipsMenu;
+		void						rebuildSnips(void);
 //help menu
 		QMenu					*helpMenu;
 

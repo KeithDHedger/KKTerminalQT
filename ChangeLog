@@ -1,4 +1,6 @@
 0.1.1
+Added snippets menu ( see "Help" menu ).
+Added sendetext to messages.
 Fixed starting up in same workspace after force quit ( kill -SIGKILL pid ).
 Added "Close Tab On Exit" to prefs.
 Set cursor pos in font prefs box.

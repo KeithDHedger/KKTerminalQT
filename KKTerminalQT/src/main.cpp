@@ -47,6 +47,7 @@ int main (int argc, char **argv)
 	kkterminalqt=new KKTerminalQTClass(napp);
 	kkterminalqt->forcedGeom=forcedg;
 	signal(SIGUSR1,signalHandler);
+	signal(SIGUSR2,signalHandler);
 	signal(SIGTERM,signalHandler);
 	signal(SIGINT,signalHandler);
 
@@ -61,6 +62,8 @@ int main (int argc, char **argv)
 			{{"t","tab"},"New tab in PWD."},
 			{{"c","command"},"Execute ARG in new tab.","ARG"},
 	});
+
+	kkterminalqt->parser.setApplicationDescription("Snippets file is at ~/.config/kkterminalqt.snippits\nOne command per line as you would type it into the terminal.\neg:\n( cd /usr/share/icons;xdg-open .;ls )\nFile can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\nAdd the current clipboard to the file and reload automatically ( use Snippets->Add clipboard to snippets ).");
 
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
 	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")) || (kkterminalqt->parser.isSet("command")))

@@ -33,17 +33,70 @@ KKTerminalQTClass::~KKTerminalQTClass()
 {
 	if(this->mainWindow!=NULL)
 		this->writeExitData();
+	delete this->mainWindow;
+}
+
+void KKTerminalQTClass::rebuildSnips(void)
+{
+	QAction	*menuitem;
+	this->snipsMenu->clear();
+	menuitem=new QAction("Add Clipboard to snippits",this->snipsMenu);
+	this->snipsMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
+		{
+			if(this->application->clipboard()->text(QClipboard::Clipboard).isEmpty()==false)
+				{
+					QFile file(QString("%1/.config/kkterminalqt.snippits").arg(getenv("HOME")));
+					if(file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+						{
+							QTextStream out(&file);
+							out <<this->application->clipboard()->text(QClipboard::Clipboard)<<Qt::endl;
+							file.close();
+						}
+					else
+						return;
+				}
+			this->rebuildSnips();
+		});
+	menuitem=new QAction("Reload snippits file",this->snipsMenu);
+	this->snipsMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
+		{
+			this->rebuildSnips();
+		});
+
+	this->snipsMenu->addSeparator();
+	QFile file(QString("%1/.config/kkterminalqt.snippits").arg(getenv("HOME")));
+	QString snips;
+	if(file.open(QFile::ReadOnly | QFile::Text))
+		{
+			QAction	*menuitem;
+			while(!file.atEnd())
+				{
+					snips=file.readLine().trimmed();
+					if(snips.isEmpty()==false)
+						{
+							menuitem=new QAction(snips,this->snipsMenu);
+							this->snipsMenu->addAction(menuitem);
+							QObject::connect(menuitem,&QAction::triggered,[this,menuitem](bool checked)
+								{
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(menuitem->text()));
+								});
+						}
+				}
+			file.close();
+		}
 }
 
 void KKTerminalQTClass::buildMainGui(void)
 {
 	QAction	*menuitem;
 
-	this->mainWindow=new QMainWindow();
+	this->mainWindow=new QMainWindow;
 	this->mainNotebook=new QTabWidget(this->mainWindow);
 	this->menuBar=new QMenuBar;
 
-	this->fileMenu=new QMenu("&File");
+	this->fileMenu=new QMenu("&File",this->menuBar);
 	this->menuBar->addMenu(this->fileMenu);
 	this->mainNotebook->setTabsClosable(true);
 	this->mainNotebook->setMovable(true);
@@ -63,7 +116,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 	
 //new
-	menuitem=new QAction(QIcon::fromTheme("document-new"),"&New");
+	menuitem=new QAction(QIcon::fromTheme("document-new"),"&New",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
 	menuitem->setShortcut(QKeySequence::New);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -73,7 +126,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 
 //close
-	menuitem=new QAction(QIcon::fromTheme("window-close"),"&Close");
+	menuitem=new QAction(QIcon::fromTheme("window-close"),"&Close",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
 	menuitem->setShortcut(QKeySequence::Close);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -84,7 +137,7 @@ void KKTerminalQTClass::buildMainGui(void)
 	});
 
 //prefs
-	menuitem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences");
+	menuitem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
@@ -110,7 +163,7 @@ void KKTerminalQTClass::buildMainGui(void)
 				}
 		});
 //quit
-	menuitem=new QAction(QIcon::fromTheme("application-exit"),"&Quit");
+	menuitem=new QAction(QIcon::fromTheme("application-exit"),"&Quit",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
 	menuitem->setShortcut(QKeySequence::Quit);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -118,10 +171,10 @@ void KKTerminalQTClass::buildMainGui(void)
 			this->application->quit();
 		});
 //edit menu
-	this->editMenu=new QMenu("&Edit");
+	this->editMenu=new QMenu("&Edit",this->menuBar);
 	this->menuBar->addMenu(this->editMenu);
 //copy
-	menuitem=new QAction(QIcon::fromTheme("edit-copy"),"&Copy");
+	menuitem=new QAction(QIcon::fromTheme("edit-copy"),"&Copy",this->editMenu);
 	menuitem->setShortcut(QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_C));
 	this->editMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -129,7 +182,7 @@ void KKTerminalQTClass::buildMainGui(void)
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->copyClipboard();
 		});
 //paste
-	menuitem=new QAction(QIcon::fromTheme("edit-paste"),"&Paste");
+	menuitem=new QAction(QIcon::fromTheme("edit-paste"),"&Paste",this->editMenu);
 	menuitem->setShortcut(QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_V));
 	this->editMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -137,18 +190,23 @@ void KKTerminalQTClass::buildMainGui(void)
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->pasteClipboard();
 		});
 //clear
-	menuitem=new QAction(QIcon::fromTheme("edit-clear"),"C&lear");
+	menuitem=new QAction(QIcon::fromTheme("edit-clear"),"C&lear",this->editMenu);
 	this->editMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->clear();
 		});
 
+//snipits menu
+	this->snipsMenu=new QMenu("&Snippets",this->menuBar);
+	this->menuBar->addMenu(this->snipsMenu);
+	this->rebuildSnips();
+
 //help menu
-	this->helpMenu=new QMenu("&Help");
+	this->helpMenu=new QMenu("&Help",this->menuBar);
 	this->menuBar->addMenu(this->helpMenu);
 //about
-	menuitem=new QAction(QIcon::fromTheme("help-about"),"&About");
+	menuitem=new QAction(QIcon::fromTheme("help-about"),"&About",this->helpMenu);
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
@@ -156,7 +214,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 //about qt
 	this->menuBar->addMenu(this->helpMenu);
-	menuitem=new QAction(QIcon::fromTheme("help-about"),"About &QT");
+	menuitem=new QAction(QIcon::fromTheme("help-about"),"About &QT",this->helpMenu);
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
@@ -164,7 +222,7 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 //help
 	this->menuBar->addMenu(this->helpMenu);
-	menuitem=new QAction(QIcon::fromTheme("help-contents"),"&Help");
+	menuitem=new QAction(QIcon::fromTheme("help-contents"),"&Help",this->helpMenu);
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
@@ -181,6 +239,7 @@ void KKTerminalQTClass::buildMainGui(void)
 void KKTerminalQTClass::addTerminal(void)
 {
 	QTermWidget		*newconsole;
+
 	newconsole=new QTermWidget(0,this->mainWindow);
 	QObject::connect(newconsole,&QTermWidget::receivedData,[this,newconsole](const QString text)
 		{
@@ -206,14 +265,6 @@ void KKTerminalQTClass::addTerminal(void)
 	newconsole->setContextMenuPolicy(Qt::CustomContextMenu);
 	newconsole->setBlinkingCursor(this->blinkCursor);
 	newconsole->setConfirmMultilinePaste(this->confirmMLPaste);
-//newconsole->setAutoClose(true);
-//	QObject::connect(newconsole,&QTermWidget::finished,[this,newconsole]()
-//		{
-//			qDebug()<<"end";
-//		});
-//newconsole->setKeyboardCursorShape(Konsole::Emulation::KeyboardCursorShape::UnderlineCursor);//both
-//newconsole->setTerminalBackgroundImage("/home/keithhedger/Backgrounds/rage.png");//both
-//newconsole->setTerminalBackgroundMode(0);//both
 
 	QObject::connect(newconsole,&QWidget::customContextMenuRequested,[this,newconsole](const QPoint pos)
 		{
@@ -232,6 +283,9 @@ void KKTerminalQTClass::addTerminal(void)
 			cmenu.addAction(&pasteinitem);
 			clearitem.setData(QVariant(104));
 			cmenu.addAction(&clearitem);
+
+			cmenu.addSeparator();
+			cmenu.addMenu(this->snipsMenu);
 
 			QAction	*selecteditem=cmenu.exec(globalpos);
 			if(selecteditem!=NULL)
@@ -273,6 +327,9 @@ void KKTerminalQTClass::handleSignal(int signum)
 {
 	switch(signum)
 		{
+			case SIGUSR2:
+				fprintf(stderr,"msgKey=0x%x\n",this->key);
+				break;
 			case SIGUSR1:
 				this->doTimer();
 				break;
@@ -319,8 +376,8 @@ void KKTerminalQTClass::runCLICommands(int quid)
 
 	for(int j=0;j<this->parser.values("command").size();j++)
 		{
- 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s\n",this->parser.value("command").toStdString().c_str());
-			message.mType=KKTERMINALQTCOMMAND;
+ 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",this->parser.value("command").toStdString().c_str());
+			message.mType=KKTERMINALQTNEWCOMMAND;
 			msgsnd(quid,&message,msglen,0);
 		}
 }
@@ -352,10 +409,13 @@ void KKTerminalQTClass::doTimer(void)
 								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
 								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
 								break;
-							case KKTERMINALQTCOMMAND:
+							case KKTERMINALQTNEWCOMMAND:
 								this->addTerminal();
 								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
-								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(buffer.mText);
+								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
+								break;
+							case KKTERMINALSENDTEXT:
+								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
 								break;
 							case KKTERMINALQTACTIVATE:
 								this->mainWindow->activateWindow();
