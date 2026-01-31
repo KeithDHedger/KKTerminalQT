@@ -63,7 +63,7 @@ int main (int argc, char **argv)
 			{{"c","command"},"Execute ARG in new tab.","ARG"},
 	});
 
-	kkterminalqt->parser.setApplicationDescription("Snippets file is at ~/.config/kkterminalqt.snippits\nOne command per line as you would type it into the terminal.\neg:\n( cd /usr/share/icons;xdg-open .;ls )\nFile can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\nAdd the current clipboard to the file and reload automatically ( use Snippets->Add clipboard to snippets ).");
+	kkterminalqt->parser.setApplicationDescription("Snippets file is at ~/.config/kkterminalqt.snippits\nOne command per line as you would type it into the terminal.\neg:\n( cd /usr/share/icons;xdg-open .;ls )\nFile can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\nAdd the current clipboard to the file and reload automatically ( use Snippets->Add clipboard to snippets ).\nIf you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.");
 
 	kkterminalqt->parser.process(kkterminalqt->application->arguments());
 	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")) || (kkterminalqt->parser.isSet("command")))

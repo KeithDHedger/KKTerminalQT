@@ -80,7 +80,11 @@ void KKTerminalQTClass::rebuildSnips(void)
 							this->snipsMenu->addAction(menuitem);
 							QObject::connect(menuitem,&QAction::triggered,[this,menuitem](bool checked)
 								{
-									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(menuitem->text()));
+									QChar	term=' ';
+									if(QGuiApplication::keyboardModifiers()!=Qt::ShiftModifier)
+										term='\n';
+
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1%2").arg(menuitem->text()).arg(term));
 								});
 						}
 				}
