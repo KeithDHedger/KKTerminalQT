@@ -1,4 +1,5 @@
 0.1.1
+Added "Add Selection to snippits" to snippets menu.
 Check for 'Shift' key when triggering snippits.
 Added snippets menu ( see "Help" menu ).
 Added sendetext to messages.

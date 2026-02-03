@@ -58,6 +58,25 @@ void KKTerminalQTClass::rebuildSnips(void)
 				}
 			this->rebuildSnips();
 		});
+	menuitem=new QAction("Add Selection to snippits",this->snipsMenu);
+	this->snipsMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
+		{
+			if(this->application->clipboard()->text(QClipboard::Selection).isEmpty()==false)
+				{
+					QFile file(QString("%1/.config/kkterminalqt.snippits").arg(getenv("HOME")));
+					if(file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+						{
+							QTextStream out(&file);
+							out <<this->application->clipboard()->text(QClipboard::Selection)<<Qt::endl;
+							file.close();
+						}
+					else
+						return;
+				}
+			this->rebuildSnips();
+		});
+
 	menuitem=new QAction("Reload snippits file",this->snipsMenu);
 	this->snipsMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
