@@ -46,6 +46,8 @@ class KKTerminalQTClass : public QObject
 		bool						closeTabOnExit=false;
 		bool						forcedGeom=false;
 
+	prefsClass	newprefs;
+
 //app functions
 		void						handleSignal(int signum);
 		void						initApp(int argc,char** argv);

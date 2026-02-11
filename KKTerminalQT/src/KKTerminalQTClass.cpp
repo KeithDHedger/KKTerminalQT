@@ -419,6 +419,18 @@ void KKTerminalQTClass::doTimer(void)
 				{
 					switch(buffer.mType)
 						{
+							case KKTERMINALQTRELOADTHEME:
+								{//TODO//to complete
+									this->newprefs.readPrefs();
+									this->theme=this->newprefs.getPrefValue("term/Theme").toString();
+									for(int j=0;j<this->mainNotebook->count();j++)
+										{
+											this->mainNotebook->setCurrentIndex(j);
+											qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
+											//qDebug()<<this->newprefs.getPrefValue("term/Theme").toString()<<this->theme<<QString(buffer.mText);
+										}
+								}
+								break;
 							case KKTERMINALQTQUIT:
 								this->application->quit();
 								break;
@@ -453,22 +465,22 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 {
 	QRect		r(100,100,800,400);
 	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry","term/CloseTabOnExit"};
-	prefsClass	newprefs;
+	//#prefsClass	newprefs;
 
-	newprefs.setPrefs(prfs);
-	newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
-	newprefs.setPrefValue("term/Theme",QVariant("Linux").toString());
-	newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
-	newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
-	newprefs.setPrefValue("term/CloseTabOnExit",QVariant(false).toBool());
-	newprefs.setPrefValue("app/geometry",QVariant(r));
-	newprefs.readPrefs();
-	this->theme=newprefs.getPrefValue("term/Theme").toString();
-	this->font.fromString(newprefs.getPrefValue("term/Font").toString());
-	this->blinkCursor=newprefs.getPrefValue("term/BlinkCursor").toBool();
-	this->confirmMLPaste=newprefs.getPrefValue("term/ConfirmPaste").toBool();
-	this->closeTabOnExit=newprefs.getPrefValue("term/CloseTabOnExit").toBool();
-	r=newprefs.getPrefValue("app/geometry").toRect();
+	this->newprefs.setPrefs(prfs);
+	this->newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
+	this->newprefs.setPrefValue("term/Theme",QVariant("Linux").toString());
+	this->newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
+	this->newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
+	this->newprefs.setPrefValue("term/CloseTabOnExit",QVariant(false).toBool());
+	this->newprefs.setPrefValue("app/geometry",QVariant(r));
+	this->newprefs.readPrefs();
+	this->theme=this->newprefs.getPrefValue("term/Theme").toString();
+	this->font.fromString(this->newprefs.getPrefValue("term/Font").toString());
+	this->blinkCursor=this->newprefs.getPrefValue("term/BlinkCursor").toBool();
+	this->confirmMLPaste=this->newprefs.getPrefValue("term/ConfirmPaste").toBool();
+	this->closeTabOnExit=this->newprefs.getPrefValue("term/CloseTabOnExit").toBool();
+	r=this->newprefs.getPrefValue("app/geometry").toRect();
 
 	this->buildMainGui();
 	this->mainWindow->setGeometry(r);
