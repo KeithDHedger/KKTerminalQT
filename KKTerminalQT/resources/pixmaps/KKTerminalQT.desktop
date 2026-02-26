@@ -6,5 +6,5 @@ Comment=
 Terminal=false
 Type=Application
 Categories=Utility;
-Icon=KKTerminalQT.png
+Icon=KKTerminalQT
 Exec=kkterminalqt
