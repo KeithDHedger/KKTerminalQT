@@ -1,3 +1,9 @@
+0.2.0
+Updated manpage/help.
+Removed unneeded build scripts.
+Now defaults to qt6 build.
+Fixed autogen.sh script.
+
 0.1.1
 Added reload theme to messages.
 Added "Add Selection to snippits" to snippets menu.

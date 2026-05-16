@@ -5,8 +5,8 @@ AM_CPPFLAGS =	-I$(top_srcdir) \
 			$(QTERMWIDGET_CFLAGS) \
 			-DPREFIX=\""${prefix}\"" \
 			-DDATADIR=\""${pkgdatadir}"\" \
-			-DSYSCONFDIR=\""${sysconfdir}/${PACKAGE}"\" \
-			-DLIBDIR=\""${libdir}/${PACKAGE}"\" \
+			-DBINDIR=\""${bindir}"\" \
+			-DDATAROOTDIR=\""${datarootdir}"\" \
 			-fPIC
 
 

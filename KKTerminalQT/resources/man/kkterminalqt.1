@@ -1,62 +1,70 @@
-.TH "KKTERMINALQT" "1" "November 2024" "KKTerminalQT 0.1.1" "User Commands"
-.SH "NAME"
-KKTerminalQT - manual page for KKTerminalQT 0.1.1
+.TH "KKTERMINALQT" "1" "May 2026" "K. D. Hedger" "User Commands"
+.SH NAME
 .br
-
-.SH "SYNOPSIS"
-\fBkkterminalqt \fR[\fIoptions\fR]
+KKTerminalQT - manual page for KKTerminalQT
 .br
-
-.SH "OPTIONS"
+.SH SYNOPSIS
+.br
+\fBkkterminalqt\fR [\fIoptions\fR]
+.br
+.SH OPTIONS
+.br
 \fB-h\fR, \fB--help\fR
-.br
        Displays help on commandline options.
-.br
 
+.br
 \fB--help-all\fR
-.br
-       Displays help including Qt specific options.
-.br
+       Displays help, including generic Qt options.
 
+.br
 \fB-v\fR, \fB--version\fR
-.br
        Displays version information.
-.br
 
-\fB-k\fR, \fB--key \fR<KeyID>
 .br
+\fB-k\fR, \fB--key\fR <KeyID>
        Force key ID.
-.br
 
+.br
 \fB-m\fR, \fB--multi\fR
-.br
        Force multiple instance.
-.br
 
+.br
 \fB-q\fR, \fB--quit\fR
-.br
        Quit app.
-.br
 
-\fB-n\fR, \fB--new-tab \fR<ARG>
 .br
+\fB-n\fR, \fB--new-tab\fR <ARG>
        New tab in ARG.
-.br
 
+.br
 \fB-t\fR, \fB--tab\fR
-.br
        New tab in PWD.
-.br
 
-\fB-c\fR, \fB--command \fR<ARG>
 .br
+\fB-c\fR, \fB--command\fR <ARG>
        Execute ARG in new tab.
 .br
-
-.SH "AUTHORS"
-K. D. Hedger.
+.SH DESCRIPTION
 .br
+Snippets file is at ˜/.config/kkterminalqt.snippits
+.br
+One command per line as you would type it into the terminal.
+.br
+eg: ( cd /usr/share/icons;xdg-open .;ls )
+.br
+File can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).
+.br
+Add the current clipboard to the file and reload automatically ( use Snippets->Add clipboard to snippets ).
+.br
+Add the current selection to the file and reload automatically ( use Snippets->Add Selection to snippets ).
+.br
+If you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.
+.br
+.SH AUTHORS
+.br
+K. D. Hedger.
 
+.br
 Source:
 .br
 https://github.com/KeithDHedger/KKTerminalQT
@@ -67,3 +75,8 @@ https://keithdhedger.github.io
 .br
 keithdhedger@gmail.com
 .br
+.SH COPYRIGHT
+.br
+KKTerminalQT is free software.
+.br
+You can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

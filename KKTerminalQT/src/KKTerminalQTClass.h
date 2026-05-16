@@ -23,9 +23,9 @@
 
 #include "globals.h"
 
-class KKTerminalQTClass : public QObject
+class KKTerminalQTClass// : public QObject
 {
-	Q_OBJECT
+	//Q_OBJECT
 
 	public:
 		KKTerminalQTClass(QApplication *app);
@@ -36,6 +36,8 @@ class KKTerminalQTClass : public QObject
 		QApplication				*application=NULL;
 		QTabWidget				*mainNotebook=NULL;
 		QMenuBar					*menuBar=NULL;
+		QString					realDataDir;
+		QString					realBinDir;
 		QString					theme="Falcon";
 		QFont					font=QGuiApplication::font();
 		int						key=-1;

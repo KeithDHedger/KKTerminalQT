@@ -1,6 +1,6 @@
 #
 #
-AC_INIT([KKTerminalQT],[0.1.1],[PROJ],[KKTerminalQT])
+AC_INIT([KKTerminalQT],[0.2.0],[PROJ],[KKTerminalQT])
 
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX
@@ -15,11 +15,11 @@ X11_MODULES="x11 >= 1.0.0"
 PKG_CHECK_MODULES(X11, $X11_MODULES)
 AC_SUBST(X11_LIBS)
 
-AC_ARG_ENABLE(qt6,AS_HELP_STRING([--enable-qt6],[Build fot Qt6]),
-    [enable_qt6=$enableval],
-    [enable_qt6="no"])
+AC_ARG_ENABLE(qt5,AS_HELP_STRING([--enable-qt5],[Build fot Qt5]),
+    [enable_qt5=$enableval],
+    [enable_qt5="no"])
 
-	if test "$enable_qt6" = "yes"; then
+	if test "$enable_qt5" = "no"; then
 		QTWIDGETS_MODULES="Qt6Widgets >= 6.6.0"
 		PKG_CHECK_MODULES(QTWIDGETS, $QTWIDGETS_MODULES)
 
@@ -53,5 +53,5 @@ AC_SUBST(QTWIDGETS_LIBS)
 AC_SUBST(QTERMWIDGET_CFLAGS)
 AC_SUBST(QTERMWIDGET_LIBS)
 
-AC_OUTPUT(Makefile KKTerminalQT/app/Makefile)
-
+AC_CONFIG_FILES(Makefile KKTerminalQT/app/Makefile)
+AC_OUTPUT

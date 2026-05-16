@@ -19,10 +19,6 @@
 */
 
 #include "KKTerminalQTClass.h"
-#ifndef moc_KKTerminalQTClass
-#include "moc_KKTerminalQTClass.cpp"
-#define moc_KKTerminalQTClass
-#endif
 
 KKTerminalQTClass::KKTerminalQTClass(QApplication *app)
 {
@@ -465,7 +461,9 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 {
 	QRect		r(100,100,800,400);
 	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry","term/CloseTabOnExit"};
-	//#prefsClass	newprefs;
+
+	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
+	this->realBinDir=QString("%1%2").arg(getenv("APPDIR")).arg(BINDIR);
 
 	this->newprefs.setPrefs(prfs);
 	this->newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
