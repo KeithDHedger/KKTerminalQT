@@ -509,8 +509,6 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));
 	QIcon::setFallbackThemeName("kkeditqticons");
 
-
-
 	this->buildMainGui();
 	this->mainWindow->setGeometry(r);
 	this->checkMessages=new QTimer();

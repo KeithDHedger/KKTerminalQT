@@ -43,7 +43,6 @@ int main (int argc, char **argv)
 	napp->setOrganizationName("KDHedger");
 	napp->setApplicationName("KKTerminalQT");
 	napp->setApplicationVersion(PACKAGE_VERSION);
-	//QIcon::setFallbackThemeName("gnome");
 
 	kkterminalqt=new KKTerminalQTClass(napp);
 	kkterminalqt->forcedGeom=forcedg;
