@@ -28,3 +28,5 @@ compile
 depcomp
 missing
 install-sh
+PrivateDevFiles/*.AppImage
+runtime-x86_64

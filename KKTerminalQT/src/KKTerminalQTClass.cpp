@@ -36,7 +36,7 @@ void KKTerminalQTClass::rebuildSnips(void)
 {
 	QAction	*menuitem;
 	this->snipsMenu->clear();
-	menuitem=new QAction("Add Clipboard to snippits",this->snipsMenu);
+	menuitem=new QAction(QIcon::fromTheme("list-add"),"Add Clipboard to snippits",this->snipsMenu);
 	this->snipsMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
 		{
@@ -54,7 +54,7 @@ void KKTerminalQTClass::rebuildSnips(void)
 				}
 			this->rebuildSnips();
 		});
-	menuitem=new QAction("Add Selection to snippits",this->snipsMenu);
+	menuitem=new QAction(QIcon::fromTheme("list-add"),"Add Selection to snippits",this->snipsMenu);
 	this->snipsMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
 		{
@@ -73,7 +73,7 @@ void KKTerminalQTClass::rebuildSnips(void)
 			this->rebuildSnips();
 		});
 
-	menuitem=new QAction("Reload snippits file",this->snipsMenu);
+	menuitem=new QAction(QIcon::fromTheme("view-refresh"),"Reload snippits file",this->snipsMenu);
 	this->snipsMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this](bool checked)
 		{
@@ -144,6 +144,15 @@ void KKTerminalQTClass::buildMainGui(void)
 			this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
 		});
 
+//clear
+	menuitem=new QAction(QIcon::fromTheme("edit-clear"),"C&lear Terminal",this->fileMenu);
+	this->fileMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->clear();
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText("\n");
+		});
+
 //close
 	menuitem=new QAction(QIcon::fromTheme("window-close"),"&Close",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
@@ -156,7 +165,7 @@ void KKTerminalQTClass::buildMainGui(void)
 	});
 
 //prefs
-	menuitem=new QAction(QIcon::fromTheme("preferences-desktop"),"&Preferences",this->fileMenu);
+	menuitem=new QAction(QIcon::fromTheme("preferences-system"),"&Preferences",this->fileMenu);
 	this->fileMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
@@ -208,12 +217,13 @@ void KKTerminalQTClass::buildMainGui(void)
 		{
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->pasteClipboard();
 		});
-//clear
-	menuitem=new QAction(QIcon::fromTheme("edit-clear"),"C&lear",this->editMenu);
+
+//paste in quotes
+	menuitem=new QAction(QIcon::fromTheme("edit-paste"),"&Paste In Quotes",this->editMenu);
 	this->editMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->clear();
+			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("'%1'").arg(QGuiApplication::clipboard()->text(QClipboard::Clipboard)));
 		});
 
 //snipits menu
@@ -260,6 +270,12 @@ void KKTerminalQTClass::addTerminal(void)
 	QTermWidget		*newconsole;
 
 	newconsole=new QTermWidget(0,this->mainWindow);
+//
+//qDebug()<<"00000"<<QTermWidget::availableKeyBindings();
+//	newconsole->setKeyBindings(QString("%1/usr/share/qtermwidget6/kb-layouts/linux").arg(getenv("APPDIR")));
+//qDebug()<<"2222"<<newconsole->keyBindings();
+
+
 	QObject::connect(newconsole,&QTermWidget::receivedData,[this,newconsole](const QString text)
 		{
 			if(this->currentConsole==newconsole)
@@ -292,7 +308,7 @@ void KKTerminalQTClass::addTerminal(void)
 			QAction	copyitem(QIcon::fromTheme("edit-copy"),"Copy");
 			QAction	pasteitem(QIcon::fromTheme("edit-paste"),"Paste");
 			QAction	pasteinitem(QIcon::fromTheme("edit-paste"),"Paste In Quotes");
-			QAction	clearitem(QIcon::fromTheme("edit-clear"),"Clear");
+			QAction	clearitem(QIcon::fromTheme("edit-clear"),"Clear Terminal");
 
 			copyitem.setData(QVariant(101));
 			cmenu.addAction(&copyitem);
@@ -321,13 +337,22 @@ void KKTerminalQTClass::addTerminal(void)
 								newconsole->sendText(QString("'%1'").arg(QGuiApplication::clipboard()->text(QClipboard::Clipboard)));
 								break;
 							case 104:
+								newconsole->sendText("\n");
 								newconsole->clear();
 								break;
 						}
 				}
 	});
 
-	newconsole->addCustomColorSchemeDir(DATADIR "/themes");
+
+
+///usr/share/qtermwidget5/color-schemes/
+//	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
+
+	newconsole->addCustomColorSchemeDir(QString("%1/themes").arg(this->realDataDir));
+	newconsole->addCustomColorSchemeDir(QString("%1/usr/share/qtermwidget6/color-schemes").arg(getenv("APPDIR")));
+	
+	//DATADIR "/themes");
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
 	newconsole->setKeyBindings("linux");
@@ -463,7 +488,7 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry","term/CloseTabOnExit"};
 
 	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
-	this->realBinDir=QString("%1%2").arg(getenv("APPDIR")).arg(BINDIR);
+	this->realBinDir=QString("%1/%2").arg(getenv("APPDIR")).arg(BINDIR);
 
 	this->newprefs.setPrefs(prfs);
 	this->newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
@@ -479,6 +504,12 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	this->confirmMLPaste=this->newprefs.getPrefValue("term/ConfirmPaste").toBool();
 	this->closeTabOnExit=this->newprefs.getPrefValue("term/CloseTabOnExit").toBool();
 	r=this->newprefs.getPrefValue("app/geometry").toRect();
+
+	QIcon::setThemeSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME")) <<QString("%1/icons").arg(this->realDataDir) );
+	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));
+	QIcon::setFallbackThemeName("kkeditqticons");
+
+
 
 	this->buildMainGui();
 	this->mainWindow->setGeometry(r);

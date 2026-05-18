@@ -4,9 +4,6 @@ include ../sources
 
 kkterminalqt_SOURCES = $(COMMONSRC)
 
-kkterminalqt_CFLAGS = -O3
-kkterminalqt_CXXFLAGS = -O3
-
 pixfilesdir = $(pkgdatadir)/pixmaps
 pixfiles_DATA = ../resources/pixmaps/*
 
@@ -20,6 +17,7 @@ man1_MANS = ../resources/man/kkterminalqt.1
 install-exec-hook:
 	install -D ../resources/pixmaps/KKTerminalQT.png $(DESTDIR)${prefix}/share/pixmaps/KKTerminalQT.png
 	install -D ../resources/pixmaps/KKTerminalQT.desktop $(DESTDIR)${prefix}/share/applications/KKTerminalQT.desktop
+	cp -r "../resources/icons" "$(DESTDIR)$(pkgdatadir)"
 
 uninstall-hook:
 	rm -f $(DESTDIR)${prefix}/share/applications/KKTerminalQT.desktop

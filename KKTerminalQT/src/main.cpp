@@ -32,6 +32,7 @@ int main (int argc, char **argv)
 	bool				forcedg=false;
 	int				status;
 	QDir				commsDir;
+
 	QApplication		*napp;
 
 	for(int i=1;i<argc;++i)
@@ -42,7 +43,7 @@ int main (int argc, char **argv)
 	napp->setOrganizationName("KDHedger");
 	napp->setApplicationName("KKTerminalQT");
 	napp->setApplicationVersion(PACKAGE_VERSION);
-	QIcon::setFallbackThemeName("gnome");
+	//QIcon::setFallbackThemeName("gnome");
 
 	kkterminalqt=new KKTerminalQTClass(napp);
 	kkterminalqt->forcedGeom=forcedg;

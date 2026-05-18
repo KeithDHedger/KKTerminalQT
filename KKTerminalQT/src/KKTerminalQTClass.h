@@ -25,8 +25,6 @@
 
 class KKTerminalQTClass// : public QObject
 {
-	//Q_OBJECT
-
 	public:
 		KKTerminalQTClass(QApplication *app);
 		~KKTerminalQTClass();
