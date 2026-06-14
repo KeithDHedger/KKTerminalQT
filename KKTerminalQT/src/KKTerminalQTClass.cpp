@@ -507,10 +507,11 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 
 	QIcon::setThemeSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME")) <<QString("%1/icons").arg(this->realDataDir) );
 	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));
-	QIcon::setFallbackThemeName("kkeditqticons");
+	QIcon::setFallbackThemeName("kkterminalqticons");
 
 	this->buildMainGui();
 	this->mainWindow->setGeometry(r);
+	this->mainWindow->setWindowIcon(QIcon(QString("%1/usr/share/pixmaps/KKTerminalQT.png").arg(getenv("APPDIR")))); 
 	this->checkMessages=new QTimer();
 	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
 		{
