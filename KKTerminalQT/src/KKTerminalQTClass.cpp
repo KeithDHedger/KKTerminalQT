@@ -270,17 +270,14 @@ void KKTerminalQTClass::addTerminal(void)
 	QTermWidget		*newconsole;
 
 	newconsole=new QTermWidget(0,this->mainWindow);
-//
-//qDebug()<<"00000"<<QTermWidget::availableKeyBindings();
-//	newconsole->setKeyBindings(QString("%1/usr/share/qtermwidget6/kb-layouts/linux").arg(getenv("APPDIR")));
-//qDebug()<<"2222"<<newconsole->keyBindings();
-
+	newconsole->setWorkingDirectory(getenv("HOME"));
 
 	QObject::connect(newconsole,&QTermWidget::receivedData,[this,newconsole](const QString text)
 		{
 			if(this->currentConsole==newconsole)
 				this->mainWindow->setWindowTitle(newconsole->workingDirectory());
 		});
+
 	QObject::connect(newconsole,&QTermWidget::termGetFocus,[this,newconsole]()
 		{
 			this->mainWindow->setWindowTitle(newconsole->workingDirectory());
@@ -345,13 +342,9 @@ void KKTerminalQTClass::addTerminal(void)
 	});
 
 
-
-///usr/share/qtermwidget5/color-schemes/
-//	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
-
 	newconsole->addCustomColorSchemeDir(QString("%1/themes").arg(this->realDataDir));
 	newconsole->addCustomColorSchemeDir(QString("%1/usr/share/qtermwidget6/color-schemes").arg(getenv("APPDIR")));
-	
+
 	//DATADIR "/themes");
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
@@ -448,7 +441,6 @@ void KKTerminalQTClass::doTimer(void)
 										{
 											this->mainNotebook->setCurrentIndex(j);
 											qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
-											//qDebug()<<this->newprefs.getPrefValue("term/Theme").toString()<<this->theme<<QString(buffer.mText);
 										}
 								}
 								break;
@@ -484,11 +476,10 @@ void KKTerminalQTClass::doTimer(void)
 
 void KKTerminalQTClass::initApp(int argc,char** argv)
 {
-	QRect		r(100,100,800,400);
-	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","app/geometry","term/CloseTabOnExit"};
+	QSettings	prefs;
+	QStringList	prfs={"term/Font","term/Theme","term/BlinkCursor","term/ConfirmPaste","term/CloseTabOnExit"};
 
 	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
-	this->realBinDir=QString("%1/%2").arg(getenv("APPDIR")).arg(BINDIR);
 
 	this->newprefs.setPrefs(prfs);
 	this->newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
@@ -496,21 +487,23 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 	this->newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
 	this->newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
 	this->newprefs.setPrefValue("term/CloseTabOnExit",QVariant(false).toBool());
-	this->newprefs.setPrefValue("app/geometry",QVariant(r));
 	this->newprefs.readPrefs();
 	this->theme=this->newprefs.getPrefValue("term/Theme").toString();
 	this->font.fromString(this->newprefs.getPrefValue("term/Font").toString());
 	this->blinkCursor=this->newprefs.getPrefValue("term/BlinkCursor").toBool();
 	this->confirmMLPaste=this->newprefs.getPrefValue("term/ConfirmPaste").toBool();
 	this->closeTabOnExit=this->newprefs.getPrefValue("term/CloseTabOnExit").toBool();
-	r=this->newprefs.getPrefValue("app/geometry").toRect();
 
 	QIcon::setThemeSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME")) <<QString("%1/icons").arg(this->realDataDir) );
 	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));
 	QIcon::setFallbackThemeName("kkterminalqticons");
 
 	this->buildMainGui();
-	this->mainWindow->setGeometry(r);
+	if(prefs.contains("app/geometry")==true)
+		this->mainWindow->restoreGeometry(prefs.value("app/geometry").toByteArray());
+	else
+		this->mainWindow->setGeometry(100,100,800,400);
+
 	this->mainWindow->setWindowIcon(QIcon(QString("%1/usr/share/pixmaps/KKTerminalQT.png").arg(getenv("APPDIR")))); 
 	this->checkMessages=new QTimer();
 	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
@@ -524,15 +517,10 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 
 void KKTerminalQTClass::writeExitData(void)
 {
-	QRect		rg;
-	QRect		rf;
 	QSettings	prefs;
 
 	if(this->forcedGeom==true)
 		return;
-	rg=this->mainWindow->geometry();
-	rf=this->mainWindow->frameGeometry();
-	rf.setHeight(rf.height()-(rf.height()-rg.height()));
-	rf.setWidth(rf.width()-(rf.width()-rg.width()));
-	prefs.setValue("app/geometry",rf);
+
+	prefs.setValue("app/geometry",this->mainWindow->saveGeometry());
 }

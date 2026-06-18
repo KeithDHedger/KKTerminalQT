@@ -136,7 +136,6 @@ SingleInstanceClass::SingleInstanceClass(QString name,int suppliedkey)
 					if((shmid<0)  || (ipcp->__key==0))
 						continue;
 
-					//printf("Key=0x%x UID=%i Perms=%o PID=%i Size=%i\n\n",ipcp->__key,ipcp->uid,ipcp->mode,shmseg.shm_cpid,shmseg.shm_segsz);
 					shmidint=shmget(ipcp->__key,SHAREDMEMSIZE,0666);
 					char *shared_memory=(char*)shmat(shmidint,NULL,0);
 					QString s(shared_memory);

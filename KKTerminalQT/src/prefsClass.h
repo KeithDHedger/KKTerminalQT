@@ -28,8 +28,6 @@
 #include <QDialogButtonBox>
 #include <QDialog>
 
-//#include <stdio.h>
-
 struct prefsReturnStruct
 {
 //simple

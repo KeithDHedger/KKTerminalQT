@@ -35,7 +35,6 @@ class KKTerminalQTClass// : public QObject
 		QTabWidget				*mainNotebook=NULL;
 		QMenuBar					*menuBar=NULL;
 		QString					realDataDir;
-		QString					realBinDir;
 		QString					theme="Falcon";
 		QFont					font=QGuiApplication::font();
 		int						key=-1;
@@ -46,7 +45,7 @@ class KKTerminalQTClass// : public QObject
 		bool						closeTabOnExit=false;
 		bool						forcedGeom=false;
 
-	prefsClass	newprefs;
+		prefsClass	newprefs;
 
 //app functions
 		void						handleSignal(int signum);

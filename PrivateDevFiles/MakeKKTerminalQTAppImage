@@ -32,6 +32,12 @@ pushd ${PROJECTFOLDER}
 	:>$ELFLOG
 popd
 
+pushd ~/Projects/qtermwidget-2.4.0/build
+	make
+	make install DESTDIR=${WHERE}
+popd
+rm -rf ${WHERE}/lib/cmake ${WHERE}/lib/pkgconfig ${WHERE}/usr/include
+
 cp --parents -rp /usr/lib/qt6/plugins/xcbglintegrations ${WHERE}
 cp --parents -rp /usr/lib/qt6/plugins/platforms/libqxcb.so ${WHERE}
 cp --parents -rp /usr/lib64/qt6/plugins/platformthemes/libqt6ct.so ${WHERE}
@@ -61,6 +67,8 @@ cat $LIBS|while read
 		fi
 		cp --parents -P "$REPLY" ${WHERE}||true
 	done
+mv ${WHERE}/usr/lib64/libproxy/* ${WHERE}/lib
+rmdir ${WHERE}/usr/lib64/libproxy
 
 APPIMAGEFOLDER=$WHERE
 APPNAME="${APPIMAGENAME,,}"
@@ -93,15 +101,16 @@ export QT_QPA_PLATFORMTHEME=qt6ct
 export QT_PLUGIN_PATH="\${APPDIR}/usr/lib/qt6/plugins:\${APPDIR}/usr/lib/qt6/:\${APPDIR}/usr/lib/qt6/plugins/xcbglintegrations:\${APPDIR}/usr/lib/qt6/plugins/platforms:\${APPDIR}/usr/lib/qt6/plugins/styles:\${APPDIR}/usr/lib/qt6/plugins/platformthemes"
 export XDG_DATA_DIRS="\${APPDIR}/usr/share:\${APPDIR}/usr/share/qtermwidget6/translations:\${APPDIR}/usr/share/qtermwidget6/kb-layouts:\${APPDIR}/usr/share/qtermwidget6/color-schemes"
 export QT_QPA_PLATFORM=xcb
-exec \${APPDIR}/usr/bin/${APPNAME} \$@
+exec \${APPDIR}/usr/bin/${APPNAME} "\$@"
 EOF
 
 chmod +x ${APPIMAGEFOLDER}/AppRun
-
-pushd ~/Projects/qtermwidget-2.4.0/build
-	make
-	make install DESTDIR=${WHERE}
-popd
+#
+#pushd ~/Projects/qtermwidget-2.4.0/build
+#	make
+#	make install DESTDIR=${WHERE}
+#popd
+#rm -rf ${WHERE}/lib/cmake ${WHERE}/lib/pkgconfig
 
 ARCH=x86_64 ~/.local/bin/appimagetool-x86_64.AppImage --no-appstream --runtime-file=./runtime-x86_64 ${APPIMAGEFOLDER} ${APPIMAGENAME}.AppImage
 

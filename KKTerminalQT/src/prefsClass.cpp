@@ -137,7 +137,11 @@ void prefsClass::createDialog(QString title,QStringList items)
 	f.setFrameStyle(QFrame::HLine|QFrame::Plain);
 	this->dialogPrefs.theDialog=new QDialog();
 	this->dialogPrefs.theDialog->setWindowTitle(title);
-	this->dialogPrefs.theDialog->setGeometry(defaults.value("prefsgeometry",QRect(100,100,320,128)).toRect());
+
+	if(defaults.contains("prefsgeometry")==true)
+		this->dialogPrefs.theDialog->restoreGeometry(defaults.value("prefsgeometry").toByteArray());
+	else
+		this->dialogPrefs.theDialog->setGeometry(100,100,550,198);
 
 	j=0;
 	while(j<items.size())
@@ -416,21 +420,21 @@ void prefsClass::createDialog(QString title,QStringList items)
 					case QDialogButtonBox::Apply:
 						{
 							QSettings	defaults;
-							QRect		rf,rg;
 
-							rg=this->dialogPrefs.theDialog->geometry();
-							rf=this->dialogPrefs.theDialog->frameGeometry();
-							rf.setHeight(rf.height()-(rf.height()-rg.height()));
-							rf.setWidth(rf.width()-(rf.width()-rg.width()));
-							defaults.setValue("prefsgeometry",rf);
+							defaults.setValue("prefsgeometry",this->dialogPrefs.theDialog->saveGeometry());
 							this->dialogPrefs.theDialog->accept();
 							this->dialogPrefs.valid=true;
 						}			
 						break;
 
 					case QDialogButtonBox::Cancel:
-						this->dialogPrefs.theDialog->reject();
-						this->dialogPrefs.valid=false;
+						{
+							QSettings	defaults;
+
+							defaults.setValue("prefsgeometry",this->dialogPrefs.theDialog->saveGeometry());
+							this->dialogPrefs.theDialog->reject();
+							this->dialogPrefs.valid=false;
+						}
 						break;
 					default:
 						break;

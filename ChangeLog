@@ -1,3 +1,11 @@
+0.3.0
+Fixed default size/position of prefs dialog.
+Fixed default size/position of main window.
+Code clean.
+Fixed saving prefs dialog geometry.
+Fixed saving main window geometry.
+Fixed links.
+
 0.2.0
 Set icon for about.
 Added paste in quotes to edit menu.
