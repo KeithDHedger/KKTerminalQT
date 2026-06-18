@@ -130,7 +130,7 @@ void KKTerminalQTClass::buildMainGui(void)
 				{
 					QTermWidget *t=qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()));
 					if(t!=NULL)
-						this->mainWindow->setWindowTitle(t->workingDirectory());
+						this->setTitles(t);
 			}
 		});
 	
@@ -141,7 +141,9 @@ void KKTerminalQTClass::buildMainGui(void)
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
 			this->addTerminal();
+			qApp->processEvents();
 			this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+			this->setTitles(this->currentConsole);
 		});
 
 //clear
@@ -275,13 +277,14 @@ void KKTerminalQTClass::addTerminal(void)
 	QObject::connect(newconsole,&QTermWidget::receivedData,[this,newconsole](const QString text)
 		{
 			if(this->currentConsole==newconsole)
-				this->mainWindow->setWindowTitle(newconsole->workingDirectory());
+				this->setTitles(newconsole);
 		});
 
 	QObject::connect(newconsole,&QTermWidget::termGetFocus,[this,newconsole]()
 		{
 			this->mainWindow->setWindowTitle(newconsole->workingDirectory());
 			this->currentConsole=newconsole;
+			this->setTitles(newconsole);
 		});
 
 	QObject::connect(newconsole,&QTermWidget::finished,[this,newconsole]()
@@ -341,11 +344,9 @@ void KKTerminalQTClass::addTerminal(void)
 				}
 	});
 
-
 	newconsole->addCustomColorSchemeDir(QString("%1/themes").arg(this->realDataDir));
 	newconsole->addCustomColorSchemeDir(QString("%1/usr/share/qtermwidget6/color-schemes").arg(getenv("APPDIR")));
 
-	//DATADIR "/themes");
 	newconsole->setColorScheme(this->theme);
 	newconsole->setTerminalFont(this->font);
 	newconsole->setKeyBindings("linux");
@@ -355,7 +356,6 @@ void KKTerminalQTClass::addTerminal(void)
 		{
 			newconsole->setWorkingDirectory(this->currentConsole->workingDirectory());
 		}
-
 	newconsole->startShellProgram();
 	newconsole->setFocus();
 }
@@ -448,9 +448,15 @@ void KKTerminalQTClass::doTimer(void)
 								this->application->quit();
 								break;
 							case KKTERMINALQTNEW:
-								this->addTerminal();
-								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
-								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+								{
+									this->addTerminal();
+									this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+									QString tabtxt=QDir(buffer.mText).dirName();
+									if(tabtxt.isEmpty()==true)
+										tabtxt="/";
+									this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabtxt);
+								}
 								break;
 							case KKTERMINALQTNEWHERE:
 								this->addTerminal();
@@ -524,3 +530,17 @@ void KKTerminalQTClass::writeExitData(void)
 
 	prefs.setValue("app/geometry",this->mainWindow->saveGeometry());
 }
+
+void KKTerminalQTClass::setTitles(QTermWidget *t)
+{
+	QString	tabtxt;
+	int		index;
+
+	index=this->mainNotebook->currentIndex();
+	this->mainWindow->setWindowTitle(t->workingDirectory());
+	tabtxt=QDir(t->workingDirectory()).dirName();
+	if(tabtxt.isEmpty()==true)
+		tabtxt="/";
+	this->mainNotebook->setTabText(index,tabtxt);
+}
+

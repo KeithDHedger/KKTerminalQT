@@ -76,6 +76,7 @@ class KKTerminalQTClass// : public QObject
 		void						buildMainGui(void);
 		void						writeExitData(void);
 		void						doTimer(void);
+		void						setTitles(QTermWidget *t);
 };
 
 #endif

@@ -1,4 +1,6 @@
 0.3.0
+Set tab text to pwd base name.
+Fixed wrong current directory in tab when opening multile tabs from cli.
 Fixed default size/position of prefs dialog.
 Fixed default size/position of main window.
 Code clean.
