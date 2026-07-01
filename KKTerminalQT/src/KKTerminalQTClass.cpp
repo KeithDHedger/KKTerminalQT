@@ -190,7 +190,7 @@ void KKTerminalQTClass::buildMainGui(void)
 					this->confirmMLPaste=newprefs.dialogPrefs.checkBoxes.value(CONFIRMPASTEBOX)->isChecked();
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setConfirmMultilinePaste(this->confirmMLPaste);
 					this->closeTabOnExit=newprefs.dialogPrefs.checkBoxes.value(CLOSETABONEXIT)->isChecked();					
-					newprefs.writePrefs();
+					//newprefs.writePrefs();
 				}
 		});
 //quit
