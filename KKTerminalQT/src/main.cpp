@@ -29,56 +29,89 @@ void signalHandler(int signalNum)
 
 int main (int argc, char **argv)
 {
-	bool				forcedg=false;
+	QApplication		*napp;
 	int				status;
 	QDir				commsDir;
-
-	QApplication		*napp;
-
-	for(int i=1;i<argc;++i)
-		if(qstrcmp(argv[i],"--qwindowgeometry")==0)
-			forcedg=true;
+	bool				forcemult=false;
 
 	napp=new QApplication(argc,argv);
 	napp->setOrganizationName("KDHedger");
-	napp->setApplicationName("KKTerminalQT");
+	napp->setApplicationName(PACKAGE_NAME);
 	napp->setApplicationVersion(PACKAGE_VERSION);
 
 	kkterminalqt=new KKTerminalQTClass(napp);
-	kkterminalqt->forcedGeom=forcedg;
 	signal(SIGUSR1,signalHandler);
 	signal(SIGUSR2,signalHandler);
 	signal(SIGTERM,signalHandler);
 	signal(SIGINT,signalHandler);
 
-	kkterminalqt->parser.addHelpOption();
-	kkterminalqt->parser.addVersionOption();
-	kkterminalqt->parser.addOptions(
+	option	long_options[]=
 		{
-			{{"k","key"},"Force key ID.","KeyID"},
-			{{"m","multi"},"Force multiple instance."},
-			{{"q","quit"},"Quit app."},
-			{{"n","new-tab"},"New tab in ARG.","ARG"},
-			{{"t","tab"},"New tab in PWD."},
-			{{"c","command"},"Execute ARG in new tab.","ARG"},
-	});
+			{"key",required_argument,NULL,'k'},
+			{"multi",no_argument,NULL,'m'},
+			{"quit",no_argument,NULL,'q'},
+			{"new-tab",required_argument,NULL,'n'},
+			{"tab",no_argument,NULL,'t'},
+			{"command",required_argument,NULL,'c'},
+			{0,0,0,0}
+		};
+//no_argument
+//required_argument
+//optional_argument
+//check cli args
+{
+	bool parse;
 
-	kkterminalqt->parser.setApplicationDescription("Snippets file is at ~/.config/kkterminalqt.snippits\nOne command per line as you would type it into the terminal.\neg:\n( cd /usr/share/icons;xdg-open .;ls )\nFile can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\nAdd the current clipboard to the file and reload automatically ( use Snippets->Add Clipboard to snippets ).\nAdd the current selection to the file and reload automatically ( use Snippets->Add Selection to snippets ).\nIf you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.");
+	parse=kkterminalqt->cliargs.doCliArgs(argc,argv,long_options);
 
-	kkterminalqt->parser.process(kkterminalqt->application->arguments());
-	if((kkterminalqt->parser.isSet("new-tab")) || (kkterminalqt->parser.isSet("tab")) || (kkterminalqt->parser.isSet("command")))
-		kkterminalqt->startBlank=true;
+	if(parse==false)
+		{
+			fprintf(stderr,"%s","\
+Usage: kkterminalqt [options]\n\
+Snippets file is at ~/.config/kkterminalqt.snippits\n\
+One command per line as you would type it into the terminal.\n\
+eg:\n\
+( cd /usr/share/icons;xdg-open .;ls )\n\
+File can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\n\
+Add the current clipboard to the file and reload automatically ( use Snippets->Add Clipboard to snippets ).\n\
+Add the current selection to the file and reload automatically ( use Snippets->Add Selection to snippets ).\n\
+If you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.\n\
+\n\
+Options:\n\
+  -h, --help           Displays help on commandline options.\n\
+  -v, --version        Displays version information.\n\
+  -k, --key <KeyID>    Force key ID.\n\
+  -m, --multi          Force multiple instance.\n\
+  -q, --quit           Quit app.\n\
+  -n, --new-tab <ARG>  New tab in ARG.\n\
+  -t, --tab            New tab in PWD.\n\
+  -c, --command <ARG>  Execute ARG in new tab.\n");
 
-	if(kkterminalqt->parser.isSet("key"))
-		kkterminalqt->key=kkterminalqt->parser.value("key").toInt(nullptr,0);
+			exit(0);
+		}
 
-	if(kkterminalqt->parser.isSet("multi"))
+	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("key")))
+		{
+			kkterminalqt->key=kkterminalqt->cliargs.getPrefValue("key").toString().toInt(nullptr,0);;
+		}
+
+	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("multi")))
 		{
 			srandom(time(NULL));
 			kkterminalqt->key=random();
+			forcemult=true;
 		}
+
+	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("command")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("new-tab")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("tab")))
+		{
+			kkterminalqt->startBlank=true;
+		}
+}
+
 	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
-	if(kkterminalqt->parser.isSet("multi"))
+	fprintf(stderr,"msgKey=0x%x shmKey=0x%x\n",siapp->key,siapp->shmKey);
+
+	if(forcemult==true)
 		{
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
@@ -114,7 +147,7 @@ int main (int argc, char **argv)
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
 		}
-     
+   
 	kkterminalqt->initApp(argc,argv);
 	kkterminalqt->runCLICommands(siapp->queueID);
 	kill(atoi(siapp->queueAddr),SIGUSR1);

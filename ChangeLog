@@ -1,3 +1,13 @@
+0.3.1
+Added version to about box.
+Fixed using hex/octal/binary/decimal key.
+Output msgKey and shmKey on startup
+Fixed prefs theme dropbox showing incorrect theme on start.
+Fixed setting tab text when opening new tab in single instance.
+Standardised prefs.
+Removed QCommandLineParser code.
+Standardised about.
+
 0.3.0
 Set tab text to pwd base name.
 Fixed wrong current directory in tab when opening multile tabs from cli.

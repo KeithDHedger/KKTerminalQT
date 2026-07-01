@@ -46,6 +46,7 @@ class KKTerminalQTClass// : public QObject
 		bool						forcedGeom=false;
 
 		prefsClass	newprefs;
+		prefsClass	cliargs;
 
 //app functions
 		void						handleSignal(int signum);
@@ -53,7 +54,6 @@ class KKTerminalQTClass// : public QObject
 
 //scripting
 		void						runCLICommands(int quid);
-		QCommandLineParser		parser;
 
 	private:
 		QTermWidget				*currentConsole=NULL;

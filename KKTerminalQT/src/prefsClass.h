@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Tue 12 Nov 13:54:31 GMT 2024 keithdhedger@gmail.com
+ * ©K. D. Hedger. Wed  1 Jul 20:38:15 BST 2026 keithdhedger@gmail.com
 
  * This file (prefsClass.h) is part of KKTerminalQT.
 
@@ -21,12 +21,9 @@
 #ifndef _PREFSCLASS_
 #define _PREFSCLASS_
 
-#include <QApplication>
-#include <QtWidgets>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QDialogButtonBox>
-#include <QDialog>
+#include "globals.h"
+
+#define RITESTRETCH 2
 
 struct prefsReturnStruct
 {
@@ -41,6 +38,10 @@ struct prefsReturnStruct
 	QHash<int,QCheckBox*>	checkBoxes;
 	QHash<int,QString>		checkBoxesPrefsName;
 	int						checkBoxCnt=0;
+	QHash<int,QDoubleSpinBox*>		spinBoxes;
+	QHash<int,QString>		spinBoxesPrefsName;
+	int						spinBoxCnt=0;
+
 //compound
 	QHash<int,QLineEdit*>	colourBoxes;
 	QHash<int,QString>		colourBoxesPrefsName;
@@ -51,30 +52,44 @@ struct prefsReturnStruct
 	QHash<int,QLineEdit*>	fileBoxes;
 	QHash<int,QString>		fileBoxesPrefsName;
 	int						fileBoxCnt=0;
+
 	bool						valid=false;
 };
 
 class prefsClass
 {
 	public:
-		prefsClass();
+		prefsClass(QString pname="");
 		~prefsClass();
 
-	prefsReturnStruct		dialogPrefs;
+		prefsReturnStruct	dialogPrefs;
+		QHash<int,QVariant>	prefsData;
+		QHash<int,QStringList>	prefsStrData;
+		QStringList			prefsNames;
+		bool					paged=false;
+		QString				opSep="\n";
+		QDialogButtonBox		*bb;
+		QStringList			extraCliArgs;
 
-	void						createDialog(QString title,QStringList items);
-	void						setPrefs(QStringList items);
-	void						setPrefValue(QString name,QVariant val);
-	QVariant					getPrefValue(QString name);
-	void						writePrefs(void);
-	void						readPrefs(void);
+		bool					doCliArgs(int argc,char **argv,option longoptions[]);
+		void					createDialog(QString title,QStringList items,QSize sze=QSize(-1,-1));
+		void					writePrefs(void);
+		void					writeManualPrefs(void);
+		void					writeSinglePref(QString name);
+		void					printCurrentPrefs(void);
+		void					addPref(QString name,QVariant qvar);
+		void					setPrefValue(QString name,QVariant val);
+		unsigned long		hashFromKey(QString key);
+		QVariant				getPrefValue(QString name);
+		QVariant				getSavedPrefValue(QString name);
+		QVariant				addPrefSavedValue(QString name,QVariant qvar);
+		void					appendStrPref(QString name,QString str);
 
 	protected:
 	private:
-		QHash<int,QVariant>	prefsData;
-		QStringList			prefsNames;
-		unsigned long		hashFromKey(QString key);
 		QString				bestFontColour(QString colour);
+		QString				prefsFileName;
+		QString				fixPrefName(QString name);
 };
 
 #endif

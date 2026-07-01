@@ -176,8 +176,9 @@ void KKTerminalQTClass::buildMainGui(void)
 			prefsClass	newprefs;
 
 			themes.sort();
-			prfs<<"combostart"<<"term/Theme"<<"Linux"<<themes<<"comboend"<<"font"<<"term/Font"<<"Monospace,10,-1,5,50,0,0,0,0,0"<<"check"<<"term/Blink Cursor"<<"0"<<"check"<<"term/Confirm Paste"<<"0"<<"check"<<"term/Close Tab On Exit"<<"0";
-			newprefs.createDialog("KKTerminalQT Prefs Class",prfs);
+			prfs<<"combostart"<<THEMEPREFSNAME<<this->theme<<themes<<"comboend"<<"font"<<FONTPREFSNAME<<"Monospace,10,-1,5,50,0,0,0,0,0"<<"check"<<BLINKPREFSNAME<<"0"<<"check"<<CONFIRMPASTEPREFSNAME<<"0"<<"check"<<CLOSETABONEXITPREFSNAME<<"0";
+
+			newprefs.createDialog(PACKAGE_STRING,prfs);
 			if(newprefs.dialogPrefs.valid==true)
 				{
 					this->theme=newprefs.dialogPrefs.comboBoxes.value(THEMEBOX)->currentText();
@@ -241,18 +242,27 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			QMessageBox::about(this->mainWindow,"KKTerminalQT",PACKAGE_STRING "<br>QT version of KKTerminal<br><br><a href=\"https://keithdhedger.github.io\">Website</a><br><br><a href=\"mailto:keithdhedger@gmail.com\">Mail Me</a>");
+			AboutBoxClass *about=new AboutBoxClass(qApp->activeWindow(),QString("%1/pixmaps/KKTerminalQT.png").arg(this->realDataDir));
+			QFile			file(QString("%1/docs/gpl-3.0.txt").arg(this->realDataDir));
+							
+			if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+				{
+					QTextStream in(&file);
+					about->licence=in.readAll();
+					file.close();
+				}
+			about->credits=credits;
+			about->setHomepage(QString("%1").arg(GLOBALWEBSITE),"Home Page");
+			about->setBodyText("A simple low resource Terminal emulator");
+			about->showAboutQtButton(true);
+			about->showLicenceButton(true);
+			about->showCreditsButton(true);
+
+			about->runAbout();
 		});
-//about qt
-	this->menuBar->addMenu(this->helpMenu);
-	menuitem=new QAction(QIcon::fromTheme("help-about"),"About &QT",this->helpMenu);
-	this->helpMenu->addAction(menuitem);
-	QObject::connect(menuitem,&QAction::triggered,[this]()
-		{
-			this->application->aboutQt();
-		});
+
 //help
-	this->menuBar->addMenu(this->helpMenu);
+	this->menuBar->addMenu(this->helpMenu);//TODO//better help
 	menuitem=new QAction(QIcon::fromTheme("help-contents"),"&Help",this->helpMenu);
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
@@ -387,35 +397,41 @@ void KKTerminalQTClass::runCLICommands(int quid)
 	QStringList	list;
 	char			*pathtopwd;
 
-	if(this->parser.isSet("quit"))
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("quit")))
 		{
  			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s","quit");
 			message.mType=KKTERMINALQTQUIT;
 			msgsnd(quid,&message,msglen,0);
 		}
 
-	for(int j=0;j<this->parser.values("new-tab").size();j++)
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("new-tab")))
 		{
- 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",this->parser.values("new-tab").at(j).toStdString().c_str());
-			message.mType=KKTERMINALQTNEW;
-			msgsnd(quid,&message,msglen,0);
-		}
-	
-	for(int j=0;j<this->parser.optionNames().size();j++)
-		{
-			if((this->parser.optionNames().at(j).compare("tab")==0) || (this->parser.optionNames().at(j).compare("t")==0))
+ 			for(int j=0;j<this->cliargs.getPrefValue("new-tab").toStringList().size();j++)
 				{
- 					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",getenv("PWD"));
+					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",qPrintable(this->cliargs.getPrefValue("new-tab").toStringList().at(j)));
+					message.mType=KKTERMINALQTNEW;
+					msgsnd(quid,&message,msglen,0);
+				}
+		}
+
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("tab")))
+		{
+ 			for(int j=0;j<this->cliargs.getPrefValue("tab").toStringList().size();j++)
+				{
+					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",getenv("PWD"));
 					message.mType=KKTERMINALQTNEWHERE;
 					msgsnd(quid,&message,msglen,0);
 				}
 		}
 
-	for(int j=0;j<this->parser.values("command").size();j++)
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("command")))
 		{
- 			msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",this->parser.value("command").toStdString().c_str());
-			message.mType=KKTERMINALQTNEWCOMMAND;
-			msgsnd(quid,&message,msglen,0);
+ 			for(int j=0;j<this->cliargs.getPrefValue("command").toStringList().size();j++)
+				{
+					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",qPrintable(this->cliargs.getPrefValue("command").toStringList().at(j)));
+					message.mType=KKTERMINALQTNEWCOMMAND;
+					msgsnd(quid,&message,msglen,0);
+			}
 		}
 }
 
@@ -434,14 +450,15 @@ void KKTerminalQTClass::doTimer(void)
 					switch(buffer.mType)
 						{
 							case KKTERMINALQTRELOADTHEME:
-								{//TODO//to complete
-									this->newprefs.readPrefs();
-									this->theme=this->newprefs.getPrefValue("term/Theme").toString();
+								{
 									for(int j=0;j<this->mainNotebook->count();j++)
 										{
 											this->mainNotebook->setCurrentIndex(j);
-											qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
+											qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(buffer.mText);
 										}
+									this->theme=buffer.mText;
+									this->newprefs.setPrefValue(THEMEPREFSNAME,QString(buffer.mText));
+									this->newprefs.writeSinglePref(THEMEPREFSNAME);
 								}
 								break;
 							case KKTERMINALQTQUIT:
@@ -459,14 +476,25 @@ void KKTerminalQTClass::doTimer(void)
 								}
 								break;
 							case KKTERMINALQTNEWHERE:
-								this->addTerminal();
-								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
-								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+								{
+									this->addTerminal();
+									this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->changeDir(buffer.mText);
+									QString tabtxt=QDir(buffer.mText).dirName();
+									if(tabtxt.isEmpty()==true)
+										tabtxt="/";
+									this->mainNotebook->setTabText(this->mainNotebook->currentIndex(),tabtxt);
+								}
 								break;
 							case KKTERMINALQTNEWCOMMAND:
-								this->addTerminal();
-								this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
-								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
+								{
+									this->addTerminal();
+									this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
+									QString tabtxt=QDir(buffer.mText).dirName();
+									if(tabtxt.isEmpty()==true)
+										tabtxt="/";
+								}
 								break;
 							case KKTERMINALSENDTEXT:
 								qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
@@ -487,18 +515,11 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 
 	this->realDataDir=QString("%1%2").arg(getenv("APPDIR")).arg(DATADIR);
 
-	this->newprefs.setPrefs(prfs);
-	this->newprefs.setPrefValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0").toString());
-	this->newprefs.setPrefValue("term/Theme",QVariant("Linux").toString());
-	this->newprefs.setPrefValue("term/BlinkCursor",QVariant(false).toBool());
-	this->newprefs.setPrefValue("term/ConfirmPaste",QVariant(false).toBool());
-	this->newprefs.setPrefValue("term/CloseTabOnExit",QVariant(false).toBool());
-	this->newprefs.readPrefs();
-	this->theme=this->newprefs.getPrefValue("term/Theme").toString();
-	this->font.fromString(this->newprefs.getPrefValue("term/Font").toString());
-	this->blinkCursor=this->newprefs.getPrefValue("term/BlinkCursor").toBool();
-	this->confirmMLPaste=this->newprefs.getPrefValue("term/ConfirmPaste").toBool();
-	this->closeTabOnExit=this->newprefs.getPrefValue("term/CloseTabOnExit").toBool();
+	this->theme=this->newprefs.addPrefSavedValue("term/Theme",QVariant("Linux")).toString();
+	this->font.fromString(this->newprefs.addPrefSavedValue("term/Font",QVariant("Monospace,10,-1,5,50,0,0,0,0,0")).toString());
+	this->blinkCursor=this->newprefs.addPrefSavedValue("term/Blink Cursor",QVariant(false)).toBool();
+	this->confirmMLPaste=this->newprefs.addPrefSavedValue("term/Confirm Paste",QVariant(false)).toBool();
+	this->closeTabOnExit=this->newprefs.addPrefSavedValue("term/Close Tab On Exit",QVariant(false)).toBool();
 
 	QIcon::setThemeSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME")) <<QString("%1/icons").arg(this->realDataDir) );
 	QIcon::setFallbackSearchPaths(QStringList()<<QString("%1/usr/share/icons").arg(getenv("APPDIR"))<<QString("/usr/share/icons")<<QString("%1/.icons").arg(getenv("HOME"))  <<QString("%1/icons").arg(this->realDataDir));

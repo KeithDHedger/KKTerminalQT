@@ -34,12 +34,9 @@ enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTNEWC
 #include <semaphore.h>
 #include <fcntl.h>
 #include <sys/stat.h> 
+#include <getopt.h>
 
-#include <QApplication>
 #include <QtWidgets>
-#include <QSettings>
-#include <QObject>
-#include <QProxyStyle>
 
 #include "config.h"
 
@@ -61,7 +58,14 @@ struct msgStruct
 #define CONFIRMPASTEBOX 1
 #define CLOSETABONEXIT 2
 
+#define THEMEPREFSNAME "term/Theme"
+#define FONTPREFSNAME "term/Font"
+#define BLINKPREFSNAME "term/Blink Cursor"
+#define CONFIRMPASTEPREFSNAME "term/Confirm Paste"
+#define CLOSETABONEXITPREFSNAME "term/Close Tab On Exit"
+
 #include "prefsClass.h"
+#include "QT_AboutBox.h"
 #include "SingleInstanceClass.h"
 #include "KKTerminalQTClass.h"
 

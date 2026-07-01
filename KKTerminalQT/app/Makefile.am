@@ -10,6 +10,9 @@ pixfiles_DATA = ../resources/pixmaps/*
 userthemesdir = $(pkgdatadir)/themes
 userthemes_DATA = ../resources/themes/*
 
+docsdir = $(pkgdatadir)/docs
+docs_DATA = ../resources/docs/*
+
 bin_PROGRAMS = kkterminalqt
 
 man1_MANS = ../resources/man/kkterminalqt.1

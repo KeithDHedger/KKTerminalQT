@@ -1,0 +1,63 @@
+/*
+ *
+ * ©K. D. Hedger. Wed  1 Jul 20:38:47 BST 2026 keithdhedger@gmail.com
+
+ * This file (QT_AboutBox.h) is part of KKTerminalQT.
+
+ * KKTerminalQT is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * KKTerminalQT is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with KKTerminalQT.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "globals.h"
+#include "credits.h"
+
+#ifndef _QT_ABOUTBOX_
+#define _QT_ABOUTBOX_
+
+class AboutBoxClass : public QObject
+{
+	public:
+		AboutBoxClass(QWidget *window,QString pixpath=NULL);
+		~AboutBoxClass();
+
+		QString		licence;
+		QString		credits;
+
+		void			runAbout(void);
+		void			setHomepage(QString hpaddr,QString hpstr);
+		void			setBodyText(QString bodystr);
+		void			showAboutQtButton(bool show=false);
+		void			showLicenceButton(bool show=false);
+		void			showCreditsButton(bool show=false);
+		void			showHelp(QString htmlpath);
+
+	private:
+		QDialog		*aboutDialog;
+		QDialog		*licenceDialog;
+		QDialog		*creditsDialog;
+		QLabel		*hpLabel;
+		QLabel		*bodyLabel;
+		QLabel		*appNameLabel;
+		QPushButton	*aboutQtButton;
+		QPushButton	*licenseButton;
+		QPushButton	*creditsButton;
+
+		void			setAppName(void);
+		void			showLicence(void);
+		void			showCredits(void);
+		void			killLicenceBox(void);
+		void			killAboutBox(void);
+		void			killCreditsBox(void);
+};
+
+#endif
