@@ -95,6 +95,9 @@ void KKTerminalQTClass::rebuildSnips(void)
 							this->snipsMenu->addAction(menuitem);
 							QObject::connect(menuitem,&QAction::triggered,[this,menuitem](bool checked)
 								{
+									if(this->mainNotebook->count()==0)
+										return;
+
 									QChar	term=' ';
 									if(QGuiApplication::keyboardModifiers()!=Qt::ShiftModifier)
 										term='\n';
@@ -123,6 +126,11 @@ void KKTerminalQTClass::buildMainGui(void)
 		{
 			this->currentConsole=NULL;
 			delete this->mainNotebook->widget(index);
+			if(this->mainNotebook->count()==0)
+				{
+					this->snipsMenu->setEnabled(false);
+					this->editMenu->setEnabled(false);
+				}
 		});
 	QObject::connect(this->mainNotebook,&QTabWidget::currentChanged,[this](int index)
 		{
@@ -151,6 +159,8 @@ void KKTerminalQTClass::buildMainGui(void)
 	this->fileMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
+			if(this->mainNotebook->count()==0)
+				return;
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->clear();
 			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText("\n");
 		});
@@ -163,7 +173,11 @@ void KKTerminalQTClass::buildMainGui(void)
 		{
 			delete this->mainNotebook->widget(this->mainNotebook->currentIndex());
 			if(this->mainNotebook->count()==0)
-				this->currentConsole=NULL;
+				{
+					this->currentConsole=NULL;
+					this->snipsMenu->setEnabled(false);
+					this->editMenu->setEnabled(false);
+				}
 	});
 
 //prefs
@@ -181,16 +195,18 @@ void KKTerminalQTClass::buildMainGui(void)
 			newprefs.createDialog(PACKAGE_STRING,prfs);
 			if(newprefs.dialogPrefs.valid==true)
 				{
+					
 					this->theme=newprefs.dialogPrefs.comboBoxes.value(THEMEBOX)->currentText();
-					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
 					this->font.fromString(newprefs.dialogPrefs.fontBoxes.value(FONTBOX)->text());
-					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setTerminalFont(this->font);
 					this->blinkCursor=newprefs.dialogPrefs.checkBoxes.value(BLINKBOX)->isChecked();
-					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setBlinkingCursor(this->blinkCursor);
 					this->confirmMLPaste=newprefs.dialogPrefs.checkBoxes.value(CONFIRMPASTEBOX)->isChecked();
+					if(this->mainNotebook->count()==0)
+						return;
+
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setColorScheme(this->theme);
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setTerminalFont(this->font);
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setBlinkingCursor(this->blinkCursor);
 					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->setConfirmMultilinePaste(this->confirmMLPaste);
-					this->closeTabOnExit=newprefs.dialogPrefs.checkBoxes.value(CLOSETABONEXIT)->isChecked();					
-					//newprefs.writePrefs();
 				}
 		});
 //quit
@@ -262,12 +278,33 @@ void KKTerminalQTClass::buildMainGui(void)
 		});
 
 //help
-	this->menuBar->addMenu(this->helpMenu);//TODO//better help
 	menuitem=new QAction(QIcon::fromTheme("help-contents"),"&Help",this->helpMenu);
 	this->helpMenu->addAction(menuitem);
 	QObject::connect(menuitem,&QAction::triggered,[this]()
 		{
-			qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText("kkterminalqt -h\n");
+			if(this->mainNotebook->count()==0)
+				return;
+			const int	fd=qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->getPtySlaveFd();
+			if(fcntl(fd, F_GETFD) != -1)
+				{
+					write(fd,helpText,strlen(helpText));
+					qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("\n"));
+				}
+		});
+
+//info
+	menuitem=new QAction(QIcon::fromTheme("dialog-info"),QString("Copy msgKey to clipboard (0x%1)").arg(QString::number(this->key,16)),this->helpMenu);
+	this->helpMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qApp->clipboard()->setText(QString("0x%1").arg(QString::number(this->key,16)));
+		});
+
+	menuitem=new QAction(QIcon::fromTheme("dialog-info"),QString("Copy shmKey to clipboard (0x%1)").arg(QString::number(this->shmKey,16)),this->helpMenu);
+	this->helpMenu->addAction(menuitem);
+	QObject::connect(menuitem,&QAction::triggered,[this]()
+		{
+			qApp->clipboard()->setText(QString("0x%1").arg(QString::number(this->shmKey,16)));
 		});
 
 	this->mainWindow->setMenuBar(this->menuBar);
@@ -368,6 +405,8 @@ void KKTerminalQTClass::addTerminal(void)
 		}
 	newconsole->startShellProgram();
 	newconsole->setFocus();
+	this->snipsMenu->setEnabled(true);
+	this->editMenu->setEnabled(true);
 }
 
 void KKTerminalQTClass::handleSignal(int signum)
@@ -430,6 +469,16 @@ void KKTerminalQTClass::runCLICommands(int quid)
 				{
 					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",qPrintable(this->cliargs.getPrefValue("command").toStringList().at(j)));
 					message.mType=KKTERMINALQTNEWCOMMAND;
+					msgsnd(quid,&message,msglen,0);
+			}
+		}
+
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("theme")))
+		{
+ 			for(int j=0;j<this->cliargs.getPrefValue("theme").toStringList().size();j++)
+				{
+					msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",qPrintable(this->cliargs.getPrefValue("theme").toStringList().at(j)));
+					message.mType=KKTERMINALQTRELOADTHEME;
 					msgsnd(quid,&message,msglen,0);
 			}
 		}

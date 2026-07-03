@@ -53,6 +53,7 @@ int main (int argc, char **argv)
 			{"new-tab",required_argument,NULL,'n'},
 			{"tab",no_argument,NULL,'t'},
 			{"command",required_argument,NULL,'c'},
+			{"theme",required_argument,NULL,'f'},
 			{0,0,0,0}
 		};
 //no_argument
@@ -66,26 +67,28 @@ int main (int argc, char **argv)
 
 	if(parse==false)
 		{
-			fprintf(stderr,"%s","\
-Usage: kkterminalqt [options]\n\
-Snippets file is at ~/.config/kkterminalqt.snippits\n\
-One command per line as you would type it into the terminal.\n\
-eg:\n\
-( cd /usr/share/icons;xdg-open .;ls )\n\
-File can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\n\
-Add the current clipboard to the file and reload automatically ( use Snippets->Add Clipboard to snippets ).\n\
-Add the current selection to the file and reload automatically ( use Snippets->Add Selection to snippets ).\n\
-If you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.\n\
-\n\
-Options:\n\
-  -h, --help           Displays help on commandline options.\n\
-  -v, --version        Displays version information.\n\
-  -k, --key <KeyID>    Force key ID.\n\
-  -m, --multi          Force multiple instance.\n\
-  -q, --quit           Quit app.\n\
-  -n, --new-tab <ARG>  New tab in ARG.\n\
-  -t, --tab            New tab in PWD.\n\
-  -c, --command <ARG>  Execute ARG in new tab.\n");
+			fprintf(stderr,"%s",helpText);
+//			fprintf(stderr,"%s","\
+//Usage: kkterminalqt [options]\n\
+//Snippets file is at ~/.config/kkterminalqt.snippits\n\
+//One command per line as you would type it into the terminal.\n\
+//eg:\n\
+//( cd /usr/share/icons;xdg-open .;ls )\n\
+//File can be edited manually ( use Snippets->Reload snippits file to reload snippet file after editing ).\n\
+//Add the current clipboard to the file and reload automatically ( use Snippets->Add Clipboard to snippets ).\n\
+//Add the current selection to the file and reload automatically ( use Snippets->Add Selection to snippets ).\n\
+//If you hold down 'SHIFT' key when selecting from Snippits menu no newline is sent but a space is added at the end of the snippit text allowing for params to be entered.\n\
+//\n\
+//Options:\n\
+//  -h, --help           Displays help on commandline options.\n\
+//  -v, --version        Displays version information.\n\
+//  -k, --key <KeyID>    Force key ID.\n\
+//  -m, --multi          Force multiple instance.\n\
+//  -q, --quit           Quit app.\n\
+//  -n, --new-tab <ARG>  New tab in ARG.\n\
+//  -t, --tab            New tab in PWD.\n\
+//  -c, --command <ARG>  Execute ARG in new tab.\n\
+//  -f, --theme <ARG>    Change theme to ARG.\n");
 
 			exit(0);
 		}
@@ -115,6 +118,7 @@ Options:\n\
 		{
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
+			kkterminalqt->shmKey=siapp->shmKey;
 			kkterminalqt->initApp(argc,argv);
 			kkterminalqt->runCLICommands(siapp->queueID);
 			kill(getpid(),SIGUSR1);
@@ -146,6 +150,7 @@ Options:\n\
 		{
 			kkterminalqt->queueID=siapp->queueID;
 			kkterminalqt->key=siapp->key;
+			kkterminalqt->shmKey=siapp->shmKey;
 		}
    
 	kkterminalqt->initApp(argc,argv);

@@ -32,17 +32,10 @@ pushd ${PROJECTFOLDER}
 	:>$ELFLOG
 popd
 
-pushd ~/Projects/qtermwidget-2.4.0/build
-	make
-	make install DESTDIR=${WHERE}
-popd
-rm -rf ${WHERE}/lib/cmake ${WHERE}/lib/pkgconfig ${WHERE}/usr/include
-
 cp --parents -rp /usr/lib/qt6/plugins/xcbglintegrations ${WHERE}
 cp --parents -rp /usr/lib/qt6/plugins/platforms/libqxcb.so ${WHERE}
 cp --parents -rp /usr/lib64/qt6/plugins/platformthemes/libqt6ct.so ${WHERE}
 cp --parents -rp /usr/lib64/qt6/plugins/styles/libqt6ct-style.so ${WHERE}
-
 cp --parents -rp /usr/lib/qt6/plugins/assetimporters ${WHERE}
 cp --parents -rp /usr/lib/qt6/plugins/sqldrivers ${WHERE}
 
@@ -75,6 +68,12 @@ APPNAME="${APPIMAGENAME,,}"
 ICONPATH="${PROJECTFOLDER}/KKTerminalQT/resources/pixmaps/KKTerminalQT.png"
 ICONNAME=$(basename "${ICONPATH}")
 
+pushd ~/Projects/qtermwidget-2.4.0/build
+	make
+	make install DESTDIR=${WHERE}
+popd
+rm -rf ${WHERE}/lib/cmake ${WHERE}/lib/pkgconfig ${WHERE}/usr/include
+
 pushd ${WHERE}/bin
 	find|xargs strip  --strip-unneeded
 popd
@@ -105,12 +104,6 @@ exec \${APPDIR}/usr/bin/${APPNAME} "\$@"
 EOF
 
 chmod +x ${APPIMAGEFOLDER}/AppRun
-#
-#pushd ~/Projects/qtermwidget-2.4.0/build
-#	make
-#	make install DESTDIR=${WHERE}
-#popd
-#rm -rf ${WHERE}/lib/cmake ${WHERE}/lib/pkgconfig
 
 ARCH=x86_64 ~/.local/bin/appimagetool-x86_64.AppImage --no-appstream --runtime-file=./runtime-x86_64 ${APPIMAGEFOLDER} ${APPIMAGENAME}.AppImage
 

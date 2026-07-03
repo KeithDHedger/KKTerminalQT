@@ -1,4 +1,9 @@
 0.3.1
+Disable snippets and edit menu when no tabs showing.
+Added -f,--theme to cli args to set terminal theme.
+Redone help.
+Added message key info to help menu.
+Added missing default icons.
 Only write out prefs if 'Apply' clicked.
 Added version to about box.
 Fixed using hex/octal/binary/decimal key.

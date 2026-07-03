@@ -37,8 +37,9 @@ class KKTerminalQTClass// : public QObject
 		QString					realDataDir;
 		QString					theme="Falcon";
 		QFont					font=QGuiApplication::font();
-		int						key=-1;
-		int						queueID=-1;
+		unsigned int				key=-1;
+		unsigned int				queueID=-1;
+		unsigned int				shmKey=-1;
 		bool						startBlank=false;
 		bool						blinkCursor=false;
 		bool						confirmMLPaste=false;
@@ -51,7 +52,7 @@ class KKTerminalQTClass// : public QObject
 //app functions
 		void						handleSignal(int signum);
 		void						initApp(int argc,char** argv);
-
+		void						doHelp(void);
 //scripting
 		void						runCLICommands(int quid);
 
