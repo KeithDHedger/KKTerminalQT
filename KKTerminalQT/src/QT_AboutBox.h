@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Wed  1 Jul 20:38:47 BST 2026 keithdhedger@gmail.com
+ * ©K. D. Hedger. Wed  8 Jul 10:23:08 BST 2026 keithdhedger@gmail.com
 
  * This file (QT_AboutBox.h) is part of KKTerminalQT.
 

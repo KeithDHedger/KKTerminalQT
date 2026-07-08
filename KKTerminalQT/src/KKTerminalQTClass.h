@@ -69,7 +69,7 @@ class KKTerminalQTClass// : public QObject
 		QMenu					*helpMenu;
 
 		QTimer 					*checkMessages=NULL;
-		int						prefsMsgTimer=2000;
+		int						prefsMsgTimer=-1;
 		int						termNumber=1;
 
 //app functions

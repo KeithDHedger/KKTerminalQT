@@ -1,6 +1,6 @@
 #
 #
-AC_INIT([KKTerminalQT],[0.3.1],[PROJ],[KKTerminalQT])
+AC_INIT([KKTerminalQT],[0.3.2],[PROJ],[KKTerminalQT])
 
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CXX

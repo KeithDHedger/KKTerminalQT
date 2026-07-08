@@ -30,9 +30,12 @@ void signalHandler(int signalNum)
 int main (int argc, char **argv)
 {
 	QApplication		*napp;
-	int				status;
+	QString			exstr;
 	QDir				commsDir;
+	int				status;
 	bool				forcemult=false;
+	bool				parse;
+	int				adjargc=argc;
 
 	napp=new QApplication(argc,argv);
 	napp->setOrganizationName("KDHedger");
@@ -60,16 +63,34 @@ int main (int argc, char **argv)
 //required_argument
 //optional_argument
 //check cli args
-{
-	bool parse;
 
-	parse=kkterminalqt->cliargs.doCliArgs(argc,argv,long_options);
+	for(int j=1;j<argc;j++)
+		{
+			if(QString(argv[j]).contains(QRegularExpression(R"RX((-x|--execute\b)\s?=?(.*))RX")))
+				{
+					adjargc=j;
+					for(int k=j;k<argc;k++)
+						{
+							exstr+=argv[k];
+							exstr+=" ";
+						}
+					exstr=exstr.trimmed();
+					QString fixed=exstr.replace(QRegularExpression(R"RX((-x|--execute\b)\s?=?(.*))RX"),"\\2");
+					exstr=fixed;
+					break;
+				}
+		}
+
+	parse=kkterminalqt->cliargs.doCliArgs(adjargc,argv,long_options);
 
 	if(parse==false)
 		{
 			fprintf(stderr,"%s",helpText);
 			exit(0);
 		}
+
+	if(exstr.isEmpty()==false)
+		kkterminalqt->cliargs.addPref("execcommand",exstr);
 
 	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("key")))
 		{
@@ -83,11 +104,10 @@ int main (int argc, char **argv)
 			forcemult=true;
 		}
 
-	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("command")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("new-tab")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("tab")))
+	if(kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("command")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("new-tab")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("tab")) || kkterminalqt->cliargs.prefsData.contains(kkterminalqt->cliargs.hashFromKey("execcommand")))
 		{
 			kkterminalqt->startBlank=true;
 		}
-}
 
 	SingleInstanceClass *siapp=new SingleInstanceClass("KKTerminalQT",kkterminalqt->key);
 	fprintf(stderr,"msgKey=0x%x shmKey=0x%x\n",siapp->key,siapp->shmKey);

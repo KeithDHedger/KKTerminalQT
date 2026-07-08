@@ -21,7 +21,7 @@
 #ifndef _GLOBALS_
 #define _GLOBALS_
 
-enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTNEWCOMMAND,KKTERMINALSENDTEXT,KKTERMINALQTACTIVATE,KKTERMINALQTRELOADTHEME};//TODO//
+enum {KKTERMINALQTQUIT=2000,KKTERMINALQTNEW,KKTERMINALQTNEWHERE,KKTERMINALQTNEWCOMMAND,KKTERMINALSENDTEXT,KKTERMINALQTACTIVATE,KKTERMINALQTRELOADTHEME,KKTERMINALQTEXECCOMM};//TODO//
 
 #define MAXMSGSIZE 256
 #define MSGANY 0
@@ -88,6 +88,7 @@ Options:\n\
   -n, --new-tab <ARG>  New tab in ARG.\n\
   -t, --tab            New tab in PWD.\n\
   -c, --command <ARG>  Execute ARG in new tab.\n\
-  -f, --theme <ARG>    Change theme to ARG.\n";
+  -f, --theme <ARG>    Change theme to ARG.\n\
+  -x, --execute ...    Consume rest of line and run in new tab.\n";
 
 #endif

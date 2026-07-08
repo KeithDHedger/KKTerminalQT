@@ -1,6 +1,6 @@
 /*
  *
- * ©K. D. Hedger. Wed  1 Jul 20:38:40 BST 2026 keithdhedger@gmail.com
+ * ©K. D. Hedger. Wed  8 Jul 10:23:15 BST 2026 keithdhedger@gmail.com
 
  * This file (QT_AboutBox.cpp) is part of KKTerminalQT.
 
@@ -91,7 +91,6 @@ void AboutBoxClass::killLicenceBox(void)
 void AboutBoxClass::killAboutBox(void)
 {
 	this->aboutDialog->close();
-	delete this;
 }
 
 void AboutBoxClass::showLicence(void)
@@ -205,6 +204,7 @@ AboutBoxClass::AboutBoxClass(QWidget *window,QString pixpath)
 	this->hpLabel->setOpenExternalLinks(true);
 	this->hpLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 	vlayout->addWidget(this->hpLabel);
+
 //credits
 	this->creditsButton=new QPushButton("&Credits");
 	this->creditsButton->setIcon(QIcon::fromTheme("text-x-credits"));

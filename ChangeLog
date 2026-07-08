@@ -1,3 +1,7 @@
+0.3.2
+Added -x,--execute to cli args, to consume rest of line and run in new tab.
+Improved start up time when using cli commands with -m option.
+
 0.3.1
 Disable snippets and edit menu when no tabs showing.
 Added -f,--theme to cli args to set terminal theme.

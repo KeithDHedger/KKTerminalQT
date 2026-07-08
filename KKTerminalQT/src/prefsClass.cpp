@@ -702,6 +702,7 @@ bool prefsClass::doCliArgs(int argc,char **argv,option longoptions[])
 			if(c=='?' || c=='h')
 				return(false);
 
+
 			ocnt=0;
 			while(longoptions[ocnt].name!=0)
 				{

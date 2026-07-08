@@ -482,6 +482,16 @@ void KKTerminalQTClass::runCLICommands(int quid)
 					msgsnd(quid,&message,msglen,0);
 			}
 		}
+
+	if(this->cliargs.prefsData.contains(this->cliargs.hashFromKey("execcommand")))
+		{
+			// qDebug()<<">>>>>"<<this->cliargs.getPrefValue("execcommand").toStringList().at(0);
+			 msglen=snprintf(message.mText,MAXMSGSIZE-1,"%s",qPrintable(this->cliargs.getPrefValue("execcommand").toStringList().at(0)));
+					message.mType=KKTERMINALQTEXECCOMM;
+					msgsnd(quid,&message,msglen,0);
+
+		}
+
 }
 
 void KKTerminalQTClass::doTimer(void)
@@ -498,6 +508,16 @@ void KKTerminalQTClass::doTimer(void)
 				{
 					switch(buffer.mType)
 						{
+							case KKTERMINALQTEXECCOMM:
+							{
+									this->addTerminal();
+									this->mainNotebook->setCurrentIndex(this->mainNotebook->count()-1);
+									qobject_cast<QTermWidget*>(this->mainNotebook->widget(this->mainNotebook->currentIndex()))->sendText(QString("%1\n").arg(buffer.mText));
+									QString tabtxt=QDir(buffer.mText).dirName();
+									if(tabtxt.isEmpty()==true)
+										tabtxt="/";
+										}
+								break;
 							case KKTERMINALQTRELOADTHEME:
 								{
 									for(int j=0;j<this->mainNotebook->count();j++)
@@ -555,6 +575,17 @@ void KKTerminalQTClass::doTimer(void)
 						}
 				}
 		}
+
+	if(this->prefsMsgTimer==-1)
+		{
+			this->prefsMsgTimer=2000;
+			this->checkMessages=new QTimer();
+			QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
+				{
+					this->doTimer();
+				});
+			this->checkMessages->start(this->prefsMsgTimer);
+		}
 }
 
 void KKTerminalQTClass::initApp(int argc,char** argv)
@@ -581,14 +612,15 @@ void KKTerminalQTClass::initApp(int argc,char** argv)
 		this->mainWindow->setGeometry(100,100,800,400);
 
 	this->mainWindow->setWindowIcon(QIcon(QString("%1/usr/share/pixmaps/KKTerminalQT.png").arg(getenv("APPDIR")))); 
-	this->checkMessages=new QTimer();
-	QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
-		{
-			this->doTimer();
-		});
-	this->checkMessages->start(this->prefsMsgTimer);
+	//this->checkMessages=new QTimer();
+	//QObject::connect(this->checkMessages,&QTimer::timeout,[this]()
+	//	{
+	//		this->doTimer();
+	//	});
+	//this->checkMessages->start(this->prefsMsgTimer);
 
 	this->mainWindow->show();
+	this->doTimer();
 }
 
 void KKTerminalQTClass::writeExitData(void)
